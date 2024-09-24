@@ -4,7 +4,7 @@ import React from "react";
 
 import CardNewEmployee from "components/Cards/CardNewEmployee"
 
-export default function Tables() {
+export default function AddEmployee() {
   return (
     <>
       <div className="flex flex-wrap mt-4">
