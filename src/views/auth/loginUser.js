@@ -1,9 +1,11 @@
 import axios from 'axios';
 
-const loginUser = async (username, password) => {
+const loginUser = async (Email, Password) => {
   try {
-    const response = await axios.post('/login', { username, password });
-    const token = response.data.token;
+    console.log(Email,Password);
+    const response = await axios.post('http://localhost:3000/api/login/', { Email, Password });
+    console.log(response);
+    const token = response.data.accessToken;
     // Store token in localStorage or sessionStorage
     localStorage.setItem('jwtToken', token);
     return token;

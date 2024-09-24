@@ -2,21 +2,21 @@ import React, {useState} from "react";
 
 export default function NewEmployeeForm() {
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    phoneNumber: "",
-    email: "",
-    password: "",
-    confirmPassword:"",
-    role: "",
-    fathersName: "",
-    fathersPhone: "",
-    spouseName: "",
-    spousePhone: "",
-    dob: "",
-    presentAddress: "",
-    permanentAddress: "",
-    aadhaar: "",
+    FirstName: "",
+    // lastName: "",
+    ContactDetails: "",
+    // email: "",
+    // password: "",
+    // confirmPassword:"",
+    // role: "",
+    FathersName: "",
+    FathersContactDetails: "",
+    SpouseName: "",
+    SpouseContactDetails: "",
+    DateOfBirth: "",
+    PresentAddress: "",
+    PermanentAddress: "",
+    AadhaarDetails: "",
     pan: "",
     drivingLicense: "",
     licenseValidity: "",
@@ -51,9 +51,9 @@ export default function NewEmployeeForm() {
     e.preventDefault();
 
     const requiredFields = [
-      "firstName", "lastName", "phoneNumber", "email", "password", "role",
-      "fathersName", "fathersPhone", "dob", "presentAddress", "permanentAddress",
-      "aadhaar", "pan", "drivingLicense", "licenseValidity", "bankAccount",
+      "FirstName", "lastName", "ContactDetails", "email", "password", "role",
+      "FathersName", "FathersContactDetails", "DateOfBirth", "PresentAddress", "PermanentAddress",
+      "AadhaarDetails", "pan", "drivingLicense", "licenseValidity", "bankAccount",
       "bankBranch", "ifscCode", "pfNumber", "esiCode"
     ];
 
@@ -81,11 +81,12 @@ export default function NewEmployeeForm() {
     }
 
     try {
-      const response = await fetch("http://your-backend-api-url/employees", {
+      console.log("here atleast 1");
+      const response = await fetch("http://localhost:3000/api/employee-details", {
         method: "POST",
         body: submissionData
       });
-
+      console.log("here atleast");
       if (response.ok) {
         const data = await response.json();
         alert("Employee data submitted successfully!");
@@ -125,9 +126,9 @@ export default function NewEmployeeForm() {
                 </label>
                 <input
                   type="text"
-                  id="firstName"
+                  id="FirstName"
                   required
-                  value={formData.firstName}
+                  value={formData.FirstName}
                   onChange={handleChange}
                   className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
                 />
@@ -155,9 +156,9 @@ export default function NewEmployeeForm() {
                 </label>
                 <input
                   type="tel"
-                  id="phoneNumber"
+                  id="ContactDetails"
                   required
-                  value={formData.phoneNumber}
+                  value={formData.ContactDetails}
                   onChange={handleChange}
                   className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
                 />
@@ -251,9 +252,9 @@ export default function NewEmployeeForm() {
                 </label>
                 <input
                   type="text"
-                  id="fathersName"
+                  id="FathersName"
                   required
-                  value={formData.fathersName}
+                  value={formData.FathersName}
                   onChange={handleChange}
                   className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
                 />
@@ -266,9 +267,9 @@ export default function NewEmployeeForm() {
                 </label>
                 <input
                   type="tel"
-                  id="fathersPhone"
+                  id="FathersContactDetails"
                   required
-                  value={formData.fathersPhone}
+                  value={formData.FathersContactDetails}
                   onChange={handleChange}
                   className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
                 />
@@ -283,7 +284,7 @@ export default function NewEmployeeForm() {
                   type="text"
                   id="spousName"
                   required
-                  value={formData.spouseName}
+                  value={formData.SpouseName}
                   onChange={handleChange}
                   className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
                 />
@@ -296,9 +297,9 @@ export default function NewEmployeeForm() {
                 </label>
                 <input
                   type="tel"
-                  id="spousePhone"
+                  id="SpouseContactDetails"
                   required
-                  value={formData.spousePhone}
+                  value={formData.SpouseContactDetails}
                   onChange={handleChange}
                   className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
                 />
@@ -306,14 +307,14 @@ export default function NewEmployeeForm() {
             </div>
             <div className="w-full lg:w-6/12 px-4">
               <div className="relative w-full mb-3">
-                <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="dob">
+                <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="DateOfBirth">
                   Date of Birth<span className="text-red-500"> *</span>
                 </label>
                 <input
                   type="date"
-                  id="dob"
+                  id="DateOfBirth"
                   required
-                  value={formData.dob}
+                  value={formData.DateOfBirth}
                   onChange={handleChange}
                   className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
                 />
@@ -325,10 +326,10 @@ export default function NewEmployeeForm() {
                   Present Address<span className="text-red-500"> *</span>
                 </label>
                 <textarea
-                  id="presentAddress"
+                  id="PresentAddress"
                   rows="3"
                   required
-                  value={formData.presentAddress}
+                  value={formData.PresentAddress}
                   onChange={handleChange}
                   className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
                 ></textarea>
@@ -340,10 +341,10 @@ export default function NewEmployeeForm() {
                   Permanent Address<span className="text-red-500"> *</span>
                 </label>
                 <textarea
-                  id="permanentAddress"
+                  id="PermanentAddress"
                   rows="3"
                   required
-                  value={formData.permanentAddress}
+                  value={formData.PermanentAddress}
                   onChange={handleChange}
                   className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
                 ></textarea>
@@ -351,14 +352,14 @@ export default function NewEmployeeForm() {
             </div>
             <div className="w-full lg:w-6/12 px-4">
               <div className="relative w-full mb-3">
-                <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="aadhaar">
-                  Aadhaar Number<span className="text-red-500"> *</span>
+                <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="AadhaarDetails">
+                  AadhaarDetails Number<span className="text-red-500"> *</span>
                 </label>
                 <input
                   type="text"
-                  id="aadhaar"
+                  id="AadhaarDetails"
                   required
-                  value={formData.aadhaar}
+                  value={formData.AadhaarDetails}
                   onChange={handleChange}
                   className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
                 />
