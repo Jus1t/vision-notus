@@ -2,6 +2,7 @@ import React, {useState, useContext} from "react";
 import { Link } from "react-router-dom";
 import loginUser from './loginUser';
 import { useHistory, useLocation } from 'react-router-dom';
+import axios from 'axios';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -9,11 +10,13 @@ export default function Login() {
   // const history = useHistory();
   // const location = useLocation();
   const handleLogin = async (e) => {
-    console.log("login button pressed");
     e.preventDefault();
     const token = await loginUser(email, password);
+
     if (token) {
       console.log('Logged in successfully');
+      const response = await axios.get('/api/user-profile/66edc2a924ae308d763c3dd0');
+      console.log(response.data);
     } else {
       console.error('Login failed');
     }
