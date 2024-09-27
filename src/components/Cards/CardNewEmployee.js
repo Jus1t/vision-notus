@@ -7,7 +7,7 @@ export default function NewEmployeeForm() {
 
   const [formData, setFormData] = useState({
     FirstName: "",
-    lastName: "",
+    LastName: "",
     ContactDetails: "",
     email: "",
     password: "",
@@ -73,6 +73,7 @@ export default function NewEmployeeForm() {
     }
 
     const employeeDetails = {
+      NameOfEmployee: formData.FirstName + " " + formData.lastName,
       FathersName: formData.FathersName,
       FathersContactDetails: formData.FathersContactDetails,
       SpouseName: formData.SpouseName,
@@ -80,17 +81,18 @@ export default function NewEmployeeForm() {
       DateOfBirth: formData.DateOfBirth,
       PresentAddress: formData.PresentAddress,
       PermanentAddress: formData.PermanentAddress,
+      ContactDetails: formData.ContactDetails,
       AadhaarDetails: formData.AadhaarDetails,
-      pan: formData.pan,
-      drivingLicense: formData.drivingLicense,
-      licenseValidity: formData.licenseValidity,
-      licenseScanFront: formData.licenseScanFront,
-      licenseScanBack: formData.licenseScanBack,
-      bankAccount: formData.bankAccount,
-      bankBranch: formData.bankBranch,
-      ifscCode: formData.ifscCode,
-      pfNumber: formData.pfNumber,
-      esiCode: formData.esiCode
+      PanDetails: formData.pan,
+      DrivingLicenseNo: formData.drivingLicense,
+      DlValidityUpto: formData.licenseValidity,
+      DlScan: formData.licenseScanFront,
+      DlScan2: formData.licenseScanBack,
+      BankAccountNo: formData.bankAccount,
+      NameOfBankAndBranch: formData.bankBranch,
+      IfscCode: formData.ifscCode,
+      PfNo: formData.pfNumber,
+      EsiCode: formData.esiCode
     };
 
     try {
@@ -101,17 +103,22 @@ export default function NewEmployeeForm() {
 
       const user = {
         FirstName: formData.FirstName,
-        lastName: formData.lastName,
-        ContactDetails: formData.ContactDetails,
-        email: formData.email,
-        password: formData.password,
-        confirmPassword: formData.confirmPassword,
-        role: formData.role,
-        employeeId: employeeId // Store the employee ID here
+        LastName: formData.LastName,
+        PhoneNumber: formData.ContactDetails,
+        Email: formData.email,
+        Role: formData.role,
+        EmployeeObjectId: employeeId // Store the employee ID here
       };
+
+      const credentials = {
+        Email: formData.email,
+        Password: formData.password
+      }
 
       // Second request to save user details
       const userResponse = await api.post('/users', user);
+      
+      const credentialsResponse = await api.post('/credentials', credentials);
 
       console.log('User created successfully', userResponse.data);
       history.push('/');
@@ -165,7 +172,7 @@ export default function NewEmployeeForm() {
                   type="text"
                   id="lastName"
                   required
-                  value={formData.lastName}
+                  value={formData.LastName}
                   onChange={handleChange}
                   className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
                 />
