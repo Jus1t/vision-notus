@@ -38,7 +38,12 @@ export default function NewEmployeeForm() {
   const handleChange = (e) => {
     const { id, value, files } = e.target;
     if (files) {
-      setFormData({ ...formData, [id]: files[0] }); // Handle file uploads
+      const reader = new FileReader();
+      reader.readAsArrayBuffer(files[0]); // Read file as binary
+      reader.onload = () => {
+        const binaryData = new Blob([reader.result], { type: files[0].type });
+        setFormData({ ...formData, [id]: binaryData }); // Handle file uploads
+      };
     } else {
       setFormData({ ...formData, [id]: value });
     }
@@ -55,7 +60,7 @@ export default function NewEmployeeForm() {
     e.preventDefault();
 
     const requiredFields = [
-      "FirstName", "lastName", "ContactDetails", "email", "password", "role",
+      "FirstName", "LastName", "ContactDetails", "email", "password", "role",
       "FathersName", "FathersContactDetails", "DateOfBirth", "PresentAddress", "PermanentAddress",
       "AadhaarDetails", "pan", "drivingLicense", "licenseValidity", "bankAccount",
       "bankBranch", "ifscCode", "pfNumber", "esiCode"
