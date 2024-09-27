@@ -1,14 +1,18 @@
 import React, {useState} from "react";
+import api from "views/auth/api";
+import {useHistory} from 'react-router-dom';
 
 export default function NewEmployeeForm() {
+  const history = useHistory();
+
   const [formData, setFormData] = useState({
     FirstName: "",
-    // lastName: "",
+    lastName: "",
     ContactDetails: "",
-    // email: "",
-    // password: "",
-    // confirmPassword:"",
-    // role: "",
+    email: "",
+    password: "",
+    confirmPassword:"",
+    role: "",
     FathersName: "",
     FathersContactDetails: "",
     SpouseName: "",
@@ -62,40 +66,58 @@ export default function NewEmployeeForm() {
       alert(`Please fill in the following required fields: ${missingFields.join(", ")}`);
       return; // Stop form submission if any fields are missing
     }
-    
-    
-        if(!passwordMatch){
-          alert("Passwords do not match!");
-          return;
-        }
-    
-    // Create FormData object to handle file uploads
-    const submissionData = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      submissionData.append(key, value);
-    });
 
-    // Log form data before submission
-    for (let pair of submissionData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
+    if(!passwordMatch){
+      alert("Passwords do not match!");
+      return;
     }
 
+    const employeeDetails = {
+      FathersName: formData.FathersName,
+      FathersContactDetails: formData.FathersContactDetails,
+      SpouseName: formData.SpouseName,
+      SpouseContactDetails: formData.SpouseContactDetails,
+      DateOfBirth: formData.DateOfBirth,
+      PresentAddress: formData.PresentAddress,
+      PermanentAddress: formData.PermanentAddress,
+      AadhaarDetails: formData.AadhaarDetails,
+      pan: formData.pan,
+      drivingLicense: formData.drivingLicense,
+      licenseValidity: formData.licenseValidity,
+      licenseScanFront: formData.licenseScanFront,
+      licenseScanBack: formData.licenseScanBack,
+      bankAccount: formData.bankAccount,
+      bankBranch: formData.bankBranch,
+      ifscCode: formData.ifscCode,
+      pfNumber: formData.pfNumber,
+      esiCode: formData.esiCode
+    };
+
     try {
-      console.log("here atleast 1");
-      const response = await fetch("http://localhost:3000/api/employee-details", {
-        method: "POST",
-        body: submissionData
-      });
-      console.log("here atleast");
-      if (response.ok) {
-        const data = await response.json();
-        alert("Employee data submitted successfully!");
-      } else {
-        alert("Failed to submit data");
-      }
+      // First request to save employee details
+      const employeeResponse = await api.post('/employees', employeeDetails);
+      
+      const employeeId = employeeResponse.data._id; // Assuming _id is returned in the response
+
+      const user = {
+        FirstName: formData.FirstName,
+        lastName: formData.lastName,
+        ContactDetails: formData.ContactDetails,
+        email: formData.email,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        role: formData.role,
+        employeeId: employeeId // Store the employee ID here
+      };
+
+      // Second request to save user details
+      const userResponse = await api.post('/users', user);
+
+      console.log('User created successfully', userResponse.data);
+      history.push('/');
+
     } catch (error) {
-      console.error("Error submitting data", error);
-      alert("Error submitting data");
+      console.error('Error:', error.response ? error.response.data : error.message);
     }
   };
 

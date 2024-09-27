@@ -14,6 +14,7 @@ import Settings from "views/admin/Settings.js";
 import Tables from "views/admin/Tables.js";
 import AddEmployee from "views/admin/AddEmployee.js";
 import AddLead from "views/admin/AddLead";
+import AddItem from "views/admin/AddItem";
 
 export default function Admin() {
   const showHeaderStats = false; // You can toggle this to true if you want to show HeaderStats
@@ -34,6 +35,7 @@ export default function Admin() {
             <Route path="/admin/tables" exact component={Tables} />
             <Route path="/admin/addemployee" exact component={AddEmployee} />
             <Route path="/admin/addlead" exact component={AddLead} />
+            <Route path="/admin/additem" exact component={AddItem} />
             <Redirect from="*" to="/admin/dashboard" />
           </Switch>
           <FooterAdmin />
