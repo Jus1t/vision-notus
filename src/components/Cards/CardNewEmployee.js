@@ -170,7 +170,7 @@ export default function NewEmployeeForm() {
                 </label>
                 <input
                   type="text"
-                  id="lastName"
+                  id="LastName"
                   required
                   value={formData.LastName}
                   onChange={handleChange}
@@ -311,7 +311,7 @@ export default function NewEmployeeForm() {
                 </label>
                 <input
                   type="text"
-                  id="spousName"
+                  id="SpouseName"
                   required
                   value={formData.SpouseName}
                   onChange={handleChange}
