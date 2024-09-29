@@ -37,16 +37,27 @@ export default function NewEmployeeForm() {
 
   const handleChange = (e) => {
     const { id, value, files } = e.target;
-    if (files) {
+  
+    if (files && files.length > 0) {
+      console.log('File selected:', files[0]);
+  
       const reader = new FileReader();
       reader.readAsArrayBuffer(files[0]); // Read file as binary
       reader.onload = () => {
         const binaryData = new Blob([reader.result], { type: files[0].type });
-        setFormData({ ...formData, [id]: binaryData }); // Handle file uploads
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          [id]: binaryData, // Set binary data for file input
+        }));
       };
     } else {
-      setFormData({ ...formData, [id]: value });
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [id]: value, // Set the regular input value
+      }));
     }
+  
+    // Handle password matching logic
     if (id === 'password' || id === 'confirmPassword') {
       setPasswordMatch(
         id === 'password'
@@ -55,6 +66,7 @@ export default function NewEmployeeForm() {
       );
     }
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,7 +90,8 @@ export default function NewEmployeeForm() {
     }
 
     const employeeDetails = {
-      NameOfEmployee: formData.FirstName + " " + formData.lastName,
+      FirstName: formData.FirstName + " " + formData.lastName,
+      LastName: formData.lastName,
       FathersName: formData.FathersName,
       FathersContactDetails: formData.FathersContactDetails,
       SpouseName: formData.SpouseName,

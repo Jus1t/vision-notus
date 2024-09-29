@@ -1,6 +1,5 @@
-import React, {useState, useContext} from "react";
+import React, {useState} from "react";
 import loginUser from './loginUser';
-import api from "./api";
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -13,8 +12,7 @@ export default function Login() {
 
     if (token) {
       console.log('Logged in successfully');
-      const response = await api.get('/api/user-profile/66edc2a924ae308d763c3dd0');
-      console.log(response.data);
+      localStorage.setItem('authorization', token);
     } else {
       console.error('Login failed');
     }
