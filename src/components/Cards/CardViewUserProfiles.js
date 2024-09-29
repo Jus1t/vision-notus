@@ -9,33 +9,17 @@ const CardViewUserProfiles = ({ color = "light" }) => {
   const usersPerPage = 10; // Number of users per page
   const history = useHistory();
 
-  const dummyUsers = [
-    { _id: '1', FirstName: 'John', LastName: 'Doe', PhoneNumber: '+1 (555) 123-4567', Email: 'john.doe@example.com', Role: 'Developer', EmployeeObjectId: '60d5ecb74f421b29c81e1111' },
-    { _id: '2', FirstName: 'Jane', LastName: 'Smith', PhoneNumber: '+1 (555) 987-6543', Email: 'jane.smith@example.com', Role: 'Designer', EmployeeObjectId: '60d5ecb74f421b29c81e2222' },
-    { _id: '3', FirstName: 'Mike', LastName: 'Johnson', PhoneNumber: '+1 (555) 555-5555', Email: 'mike.johnson@example.com', Role: 'Manager', EmployeeObjectId: '60d5ecb74f421b29c81e3333' },
-    { _id: '4', FirstName: 'Emily', LastName: 'Brown', PhoneNumber: '+1 (555) 444-3333', Email: 'emily.brown@example.com', Role: 'QA Engineer', EmployeeObjectId: '60d5ecb74f421b29c81e4444' },
-    { _id: '5', FirstName: 'Alex', LastName: 'Wilson', PhoneNumber: '+1 (555) 222-1111', Email: 'alex.wilson@example.com', Role: 'DevOps Engineer', EmployeeObjectId: '60d5ecb74f421b29c81e5555' },
-    { _id: '6', FirstName: 'Sara', LastName: 'Parker', PhoneNumber: '+1 (555) 666-7777', Email: 'sara.parker@example.com', Role: 'Product Manager', EmployeeObjectId: '60d5ecb74f421b29c81e6666' },
-    { _id: '7', FirstName: 'Chris', LastName: 'Evans', PhoneNumber: '+1 (555) 888-9999', Email: 'chris.evans@example.com', Role: 'Support Engineer', EmployeeObjectId: '60d5ecb74f421b29c81e7777' },
-    { _id: '8', FirstName: 'Sam', LastName: 'Taylor', PhoneNumber: '+1 (555) 555-9999', Email: 'sam.taylor@example.com', Role: 'Software Architect', EmployeeObjectId: '60d5ecb74f421b29c81e8888' },
-    { _id: '9', FirstName: 'Kate', LastName: 'Williams', PhoneNumber: '+1 (555) 123-5555', Email: 'kate.williams@example.com', Role: 'Scrum Master', EmployeeObjectId: '60d5ecb74f421b29c81e9999' },
-    { _id: '10', FirstName: 'Paul', LastName: 'Harris', PhoneNumber: '+1 (555) 555-7777', Email: 'paul.harris@example.com', Role: 'Business Analyst', EmployeeObjectId: '60d5ecb74f421b29c81e1010' },
-    { _id: '11', FirstName: 'Laura', LastName: 'Miller', PhoneNumber: '+1 (555) 000-1111', Email: 'laura.miller@example.com', Role: 'HR Manager', EmployeeObjectId: '60d5ecb74f421b29c81e1112' },
-    { _id: '12', FirstName: 'Ben', LastName: 'Carter', PhoneNumber: '+1 (555) 333-2222', Email: 'ben.carter@example.com', Role: 'CTO', EmployeeObjectId: '60d5ecb74f421b29c81e1113' }
-  ];
-
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        // await new Promise(resolve => setTimeout(resolve, 1000));
-        // setUsers(dummyUsers);
-        console.log(localStorage.getItem('authorization'))
-        const response = api.get('/api/user-profiles')
-        console.log(response)
-        // setLoading(false);
+        const response = await api.get('/user-profiles')
+        console.log(response.data)
+        setUsers(response.data)
+
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching users:', error);
-        // setLoading(false);
+        setLoading(false);
       }
     };
 
@@ -43,7 +27,7 @@ const CardViewUserProfiles = ({ color = "light" }) => {
   }, []);
 
   const handleShowDetails = (employeeId) => {
-    history.push(`/employee/${employeeId}`);
+    history.push(`/admin/employee/${employeeId}`);
   };
 
   const handlePageChange = (pageNumber) => {
@@ -62,42 +46,83 @@ const CardViewUserProfiles = ({ color = "light" }) => {
   const totalPages = Math.ceil(users.length / usersPerPage);
 
   return (
-      <div
-        className={
-          "relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded " +
-          (color === "light" ? "bg-white" : "bg-lightBlue-900 text-white")
-        }
-      >
-        <div className="rounded-t mb-0 px-4 py-3 border-0">
-          <div className="flex flex-wrap items-center">
-            <div className="relative w-full px-4 max-w-full flex-grow flex-1">
-              <h6 className="text-blueGray-900 text-xl font-bold">
-                Employees
-              </h6>
-            </div>
-          </div>
+    <div
+    className={
+      "relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded " +
+      (color === "light" ? "bg-white" : "bg-lightBlue-900 text-white")
+    }
+  >
+    <div className="rounded-t mb-0 px-4 py-3 border-0">
+      <div className="flex flex-wrap items-center">
+        <div className="relative w-full px-4 max-w-full flex-grow flex-1">
+          <h3
+            className={
+              "font-semibold text-lg " +
+              (color === "light" ? "text-blueGray-700" : "text-white")
+            }
+          >
+            Employees
+          </h3>
         </div>
-        <div className="flex-auto px-4 lg:px-10 py-10 pt-0">
-          <table className="items-center w-full bg-transparent border-collapse">
-            <thead>
-              <tr>
-                <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left">
-                  Name
-                </th>
-                <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left">
-                  Role
-                </th>
-                <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left">
-                  Email
-                </th>
-                <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left">
-                  Phone
-                </th>
-                <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left">
-                  Actions
-                </th>
-              </tr>
-            </thead>
+      </div>
+    </div>
+    <div className="block w-full overflow-x-auto">
+      {/* Employees table */}
+      <table className="items-center w-full bg-transparent border-collapse">
+        <thead>
+          <tr>
+            <th
+              className={
+                "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
+                (color === "light"
+                  ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
+                  : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
+              }
+            >
+              Name
+            </th>
+            <th
+              className={
+                "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
+                (color === "light"
+                  ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
+                  : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
+              }
+            >
+              Role
+            </th>
+            <th
+              className={
+                "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
+                (color === "light"
+                  ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
+                  : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
+              }
+            >
+              Email
+            </th>
+            <th
+              className={
+                "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
+                (color === "light"
+                  ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
+                  : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
+              }
+            >
+              Phone
+            </th>
+            <th
+              className={
+                "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
+                (color === "light"
+                  ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
+                  : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
+              }
+            >
+              Action
+            </th> 
+          </tr>
+        </thead>
             <tbody>
               {currentUsers.map((user) => (
                 <tr key={user._id}>

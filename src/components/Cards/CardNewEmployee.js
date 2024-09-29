@@ -90,8 +90,8 @@ export default function NewEmployeeForm() {
     }
 
     const employeeDetails = {
-      FirstName: formData.FirstName + " " + formData.lastName,
-      LastName: formData.lastName,
+      FirstName: formData.FirstName + " " + formData.LastName,
+      LastName: formData.LastName,
       FathersName: formData.FathersName,
       FathersContactDetails: formData.FathersContactDetails,
       SpouseName: formData.SpouseName,
@@ -115,9 +115,14 @@ export default function NewEmployeeForm() {
 
     try {
       // First request to save employee details
-      const employeeResponse = await api.post('/employees', employeeDetails);
+      const response = await api.post('/employee-details', employeeDetails, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      console.log('Employee details uploaded successfully:', response);
       
-      const employeeId = employeeResponse.data._id; // Assuming _id is returned in the response
+      const employeeId = response.data._id; // Assuming _id is returned in the response
 
       const user = {
         FirstName: formData.FirstName,
@@ -134,7 +139,7 @@ export default function NewEmployeeForm() {
       }
 
       // Second request to save user details
-      const userResponse = await api.post('/users', user);
+      const userResponse = await api.post('/user-profile', user);
       
       const credentialsResponse = await api.post('/credentials', credentials);
 
