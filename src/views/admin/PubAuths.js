@@ -1,12 +1,12 @@
 import React from 'react'
-import CardNewItem from 'components/Cards/CardNewItem'
+import CardPublishingAuthorities from 'components/Cards/CardPublishingAuthorities'
 
-const AddItem = () => {
+const PubAuths = () => {
   return (
-    <>
+   <>
       <div className="flex flex-wrap mt-4">
         <div className="w-full mb-12 px-4">
-          <CardNewItem />
+          <CardPublishingAuthorities />
         </div>
         
       </div>
@@ -14,4 +14,4 @@ const AddItem = () => {
   )
 }
 
-export default AddItem
+export default PubAuths

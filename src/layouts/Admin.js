@@ -5,18 +5,21 @@ import { Switch, Route, Redirect } from "react-router-dom";
 import AdminNavbar from "components/Navbars/AdminNavbar.js";
 import Sidebar from "components/Sidebar/Sidebar.js";
 import HeaderStats from "components/Headers/HeaderStats.js";
-import FooterAdmin from "components/Footers/FooterAdmin.js";
 
 // views
 import Dashboard from "views/admin/Dashboard.js";
 import Maps from "views/admin/Maps.js";
 import Settings from "views/admin/Settings.js";
 import Tables from "views/admin/Tables.js";
-import AddEmployee from "views/admin/AddEmployee.js";
-import AddLead from "views/admin/AddLead";
-import AddItem from "views/admin/AddItem";
 import ViewEmployees from "views/admin/ViewEmployees";
 import EmployeeDetails from "views/admin/EmployeeDetails"
+import PubAuths from "views/admin/PubAuths";
+import CreateBOQ from "views/admin/CreateBOQ";
+import CreateEmployee from "views/admin/CreateEmployee";
+import CreateLead from "views/admin/CreateLead";
+import CreateItem from "views/admin/CreateItem";
+import CreatePubAuth from "views/admin/CreatePubAuth";
+import Tenders from "views/admin/Tenders";
 
 export default function Admin() {
   const showHeaderStats = false;
@@ -35,14 +38,17 @@ export default function Admin() {
             <Route path="/admin/maps" exact component={Maps} />
             <Route path="/admin/settings" exact component={Settings} />
             <Route path="/admin/tables" exact component={Tables} />
-            <Route path="/admin/addemployee" exact component={AddEmployee} />
-            <Route path="/admin/addlead" exact component={AddLead} />
-            <Route path="/admin/additem" exact component={AddItem} />
+            <Route path="/admin/addemployee" exact component={CreateEmployee} />
+            <Route path="/admin/addlead" exact component={CreateLead} />
+            <Route path="/admin/additem" exact component={CreateItem} />
             <Route path="/admin/viewemployees" exact component={ViewEmployees} />
             <Route path="/admin/employee/:id" exact component={EmployeeDetails} />
+            <Route path="/admin/addpubauth" exact component={CreatePubAuth} />
+            <Route path="/admin/pubauths" exact component={PubAuths} />
+            <Route path="/admin/addboq" exact component={CreateBOQ} />
+            <Route path="/admin/tenders" exact component={Tenders} />
             <Redirect from="*" to="/admin/dashboard" />
           </Switch>
-          <FooterAdmin />
         </div>
       </div>
     </>

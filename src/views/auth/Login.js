@@ -1,20 +1,27 @@
 import React, {useState} from "react";
 import loginUser from './loginUser';
+import {jwtDecode} from 'jwt-decode';
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  // const history = useHistory();
+  const [userRole, setUserRole] = useState(null);
+
+  const history = useHistory();
   // const location = useLocation();
   const handleLogin = async (e) => {
     e.preventDefault();
     const token = await loginUser(email, password);
 
     if (token) {
-      console.log('Logged in successfully');
+      const decodedToken = jwtDecode(token);
+      setUserRole(decodedToken.role);
+      localStorage.setItem('token', token);
       localStorage.setItem('authorization', token);
+      history.push('/admin/dashboard'); 
     } else {
-      console.error('Login failed');
+      alert('Login Unsuccessful');
     }
   };
 

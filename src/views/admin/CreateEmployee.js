@@ -2,14 +2,14 @@ import React from "react";
 
 // components
 
-import CardNewEmployee from "components/Cards/CardNewEmployee"
+import CardCreateEmployee from "components/Cards/CardCreateEmployee"
 
-export default function AddEmployee() {
+export default function CreateEmployee() {
   return (
     <>
       <div className="flex flex-wrap mt-4">
         <div className="w-full mb-12 px-4">
-          <CardNewEmployee />
+          <CardCreateEmployee />
         </div>
         
       </div>
