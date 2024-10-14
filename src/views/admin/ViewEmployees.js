@@ -1,10 +1,10 @@
 import React from 'react'
-import CardViewUserProfiles from 'components/Cards/CardViewUserProfiles'
+import CardViewEmployees from 'components/Cards/CardViewEmployees'
 
 const ViewEmployees = () => {
   return (
     <div>
-      <CardViewUserProfiles />
+      <CardViewEmployees />
     </div>
   )
 }

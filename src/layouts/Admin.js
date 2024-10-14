@@ -20,6 +20,9 @@ import CreateLead from "views/admin/CreateLead";
 import CreateItem from "views/admin/CreateItem";
 import CreatePubAuth from "views/admin/CreatePubAuth";
 import Tenders from "views/admin/Tenders";
+import ViewItems from "views/admin/ViewItems";
+import ViewBOQs from "views/admin/ViewBOQs";
+import ViewBOQ from "views/admin/ViewBOQ";
 
 export default function Admin() {
   const showHeaderStats = false;
@@ -47,6 +50,9 @@ export default function Admin() {
             <Route path="/admin/pubauths" exact component={PubAuths} />
             <Route path="/admin/addboq" exact component={CreateBOQ} />
             <Route path="/admin/tenders" exact component={Tenders} />
+            <Route path="/admin/viewitems" exact component={ViewItems} />
+            <Route path="/admin/viewboqs" exact component={ViewBOQs} />
+            <Route path="/admin/viewboq/:id" exact component={ViewBOQ} />
             <Redirect from="*" to="/admin/dashboard" />
           </Switch>
         </div>

@@ -68,7 +68,7 @@ export default function CardEmployeeDetails() {
           {!isEditMode ? (
             // Render Edit button if isEditMode is false
             <button
-              className="bg-lightBlue-500 text-white active:bg-lightBlue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
+              className="bg-orange-500 text-white active:bg-lightBlue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
               type="button"
               onClick={handleEditClick} // This should enable edit mode
             >
@@ -77,7 +77,7 @@ export default function CardEmployeeDetails() {
           ) : (
             <div>
               <button
-                className="bg-green-500 text-white active:bg-green-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
+                className="bg-lightBlue-500 text-white active:bg-red-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none ease-linear transition-all duration-150"
                 type="button"
                 onClick={handleSubmitClick} // This should handle form submission
               >

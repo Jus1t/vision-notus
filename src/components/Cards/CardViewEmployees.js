@@ -2,12 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import api from 'views/auth/api';
 
-const CardViewUserProfiles = ({ color = "light" }) => {
+const CardViewEmployees = ({ color = "light" }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1); // Pagination state
   const usersPerPage = 10; // Number of users per page
   const history = useHistory();
+
+  const columnbaseclass =
+    "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left ";
+  const lightClass = "bg-blueGray-50 text-blueGray-500 border-blueGray-100";
+  const darkClass = "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700";
+  const columnselectedclass = color === "light" ? lightClass : darkClass;
+  const tdClass = "border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4";
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -71,46 +78,10 @@ const CardViewUserProfiles = ({ color = "light" }) => {
       <table className="items-center w-full bg-transparent border-collapse">
         <thead>
           <tr>
-            <th
-              className={
-                "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                (color === "light"
-                  ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
-                  : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
-              }
-            >
-              Name
-            </th>
-            <th
-              className={
-                "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                (color === "light"
-                  ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
-                  : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
-              }
-            >
-              Role
-            </th>
-            <th
-              className={
-                "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                (color === "light"
-                  ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
-                  : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
-              }
-            >
-              Email
-            </th>
-            <th
-              className={
-                "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                (color === "light"
-                  ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
-                  : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
-              }
-            >
-              Phone
-            </th>
+            <th className={columnbaseclass + columnselectedclass}>Name</th>
+            <th className={columnbaseclass + columnselectedclass}>Role</th>
+            <th className={columnbaseclass + columnselectedclass}>Email</th>
+            <th className={columnbaseclass + columnselectedclass}>Phone</th>
             <th
               className={
                 "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
@@ -126,20 +97,11 @@ const CardViewUserProfiles = ({ color = "light" }) => {
             <tbody>
               {currentUsers.map((user) => (
                 <tr key={user._id}>
-                  <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                    {user.FirstName} {user.LastName}
-                  </td>
-                  <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                    {user.Role}
-                  </td>
-                  <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                    {user.Email}
-                  </td>
-                  <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                    {user.PhoneNumber}
-                  </td>
-                  <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                    <button
+                  <td className={tdClass}> {user.FirstName} {user.LastName} </td>
+                  <td className={tdClass}> {user.Role} </td>
+                  <td className={tdClass}> {user.Email}  </td>
+                  <td className={tdClass}> {user.PhoneNumber} </td>
+                  <td className={tdClass}> <button
                       onClick={() => handleShowDetails(user.EmployeeObjectId)}
                       className="bg-lightBlue-500 text-white active:bg-lightBlue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
                     >
@@ -183,4 +145,4 @@ const CardViewUserProfiles = ({ color = "light" }) => {
   );
 };
 
-export default CardViewUserProfiles;
+export default CardViewEmployees;
