@@ -49,6 +49,11 @@ export default function Sidebar() {
     { name: "Items", path: "/admin/viewitems", icon: "fas fa-boxes" },
   ];
 
+  const productLinks = [
+    {name: "Add New Product", path: "/admin/addproduct", icon: "fas fa-box"},
+    { name: "Products", path : "/admin/viewproducts", icon: "fas fa-boxes"}
+  ]
+
   // Tender Section Links with different icons
   const tenderLinks = [
     { name: "Add Tender", path: "/admin/addtender", icon: "fas fa-file-contract" },
@@ -155,6 +160,9 @@ export default function Sidebar() {
 
             {/* Item Section */}
             <SidebarSection title="Item Management" links={itemLinks} />
+
+            {/* Product Section*/}
+            <SidebarSection title="Product Management" links={productLinks} />
 
             {/* Tender Section */}
             <SidebarSection title="Tender Management" links={tenderLinks} />

@@ -53,9 +53,10 @@ export default function CardCreateBOQ({ color = "light" }) {
   const [authorities, setAuthorities] = useState();
   const [items, setItems] = useState([]);
   const [itemList, setItemList] = useState(dummyItems);
+  const [options, setOptions] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [productList, setProductList] = useState([]);
   const [tableData, setTableData] = useState([]);
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [selectedProducts, setSelectedProducts] = useState([]);
   const [totalSorAmount, setTotalSorAmount] = useState(0);
   const [editIndex, setEditIndex] = useState(null); // Track the index of the row being edited
 
@@ -65,6 +66,11 @@ export default function CardCreateBOQ({ color = "light" }) {
   const darkClass = "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700";
   const columnselectedclass = color === "light" ? lightClass : darkClass;
   const tdClass = "border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4";
+
+  useEffect(() => {
+    const mergedOptions = [...itemList, ...productList];
+    setOptions(mergedOptions);
+  }, [itemList, productList]);
 
   // Fetch publishing authorities from API (fallback to dummy if API call fails)
   useEffect(() => {
@@ -95,8 +101,15 @@ export default function CardCreateBOQ({ color = "light" }) {
         }));
         setItemList(itemNamesId)
         setItems(itemsResponse.data);
-        // const productsResponse = await api.get("/products");
-        // setItems([...itemsResponse.data, ...productsResponse.data]);
+
+        const productResponse = await api.get("/product-details");
+        console.log(productResponse.data)
+        const productNamesId = productResponse.data.map(i => ({
+          value: i._id,
+          label: i.productName
+        }))
+        setProductList(productNamesId)
+        setProducts(productResponse.data)
       } catch (error) {
         console.error("Error fetching items/products, using dummy data", error);
       }
@@ -121,11 +134,10 @@ export default function CardCreateBOQ({ color = "light" }) {
     const foundItem = items.find(i => i.ShortDesc === label);
     return foundItem ? foundItem : null; // Returns null if not found
   };
-  // const findProductbyName = (label) => {
-  //   const foundProduct = products.find(i => i.label === label);
-  //   return foundProduct ? foundProduct : null; // Returns null if not found
-  // };
-
+  const findProductbyName = (label) => {
+    const fountProduct = products.find(i => i.productName === label);
+    return fountProduct ? fountProduct : null
+  }
   // Handle change for select fields
   const handleSelectChange = (selectedOption, { id }) => {
     setFormData((prevData) => ({
@@ -144,7 +156,7 @@ export default function CardCreateBOQ({ color = "light" }) {
     if (selection) {
       selectedIsProduct = false;
     } else {
-      // selection = findProductbyName(selectionName.label);
+      selection = findProductbyName(selectionName.label);
     }
 
     if (!selection) {
@@ -165,7 +177,10 @@ export default function CardCreateBOQ({ color = "light" }) {
     } else {
       // Selection is a product
       const newProduct = {
-        // Add product details
+        Product: selection,
+        ReqQty: quantity,
+        SorRate: sorRate,
+        SorAmount: sorRate * quantity
       };
       processedProducts.push(newProduct); // Add to local array
     }
@@ -244,7 +259,7 @@ export default function CardCreateBOQ({ color = "light" }) {
         processSelection(selectionName, quantity, sorRate, processedItems, processedProducts);
       });
     }, 100);
-    
+
     setTimeout(async () => {
       const boqdetails = {
         PublishingAuthId: formData.pubauthid.value,
@@ -301,7 +316,7 @@ export default function CardCreateBOQ({ color = "light" }) {
           <div className="flex flex-wrap">
             <div className="w-full lg:w-4/12 px-4">
               <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">Product/Item Name</label>
-              <Select options={itemList} styles={customStyles} placeholder="Select Item" value={formData.selectionName} onChange={(selectedOption) => handleSelectChange(selectedOption, { id: "selectionName" })} />
+              <Select options={options} styles={customStyles} placeholder="Select Item" value={formData.selectionName} onChange={(selectedOption) => handleSelectChange(selectedOption, { id: "selectionName" })} />
             </div>
             <div className="w-full lg:w-4/12 px-4">
               <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">Quantity</label>

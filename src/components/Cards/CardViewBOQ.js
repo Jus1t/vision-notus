@@ -16,7 +16,6 @@ const CardViewBOQ = ({ color = 'light' }) => {
         const boqDetails = response.data;
         console.log(response.data)
         setBoqData(boqDetails);
-
         // Fetch the publishing authority name using the PublishingAuthId from the BOQ details
         const pubAuthResponse = await api.get(`/publishing-auth/${boqDetails.PublishingAuthId}`);
         setPublishingAuthority(pubAuthResponse.data.name);
@@ -95,7 +94,7 @@ const CardViewBOQ = ({ color = 'light' }) => {
             <thead>
               <tr>
                 <th className={columnbaseclass + columnselectedclass}>#</th>
-                <th className={columnbaseclass + columnselectedclass}>Item Name</th>
+                <th className={columnbaseclass + columnselectedclass}>Item/Product Name</th>
                 <th className={columnbaseclass + columnselectedclass}>Quantity</th>
                 <th className={columnbaseclass + columnselectedclass}>SOR Rate</th>
                 <th className={columnbaseclass + columnselectedclass}>SOR Amount</th>
@@ -112,12 +111,11 @@ const CardViewBOQ = ({ color = 'light' }) => {
                     <td className={tdClass}>{i.SorAmount.toFixed(2)}</td>
                   </tr>
                 ))}
-              {/* If you have products, you can display them similarly */}
               {boqData.ProductList &&
                 boqData.ProductList.map((product, index) => (
                   <tr key={`product-${index}`}>
                     <td className={tdClass}>{boqData.ItemList.length + index + 1}</td>
-                    <td className={tdClass}>{product.ProductName}</td>
+                    <td className={tdClass}>{product.Product.productName}</td>
                     <td className={tdClass}>{product.ReqQty}</td>
                     <td className={tdClass}>{product.SorRate}</td>
                     <td className={tdClass}>{product.SorAmount.toFixed(2)}</td>

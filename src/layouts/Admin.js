@@ -23,6 +23,9 @@ import ViewItems from "views/admin/ViewItems";
 import ViewBOQs from "views/admin/ViewBOQs";
 import ViewBOQ from "views/admin/ViewBOQ";
 import ProtectedRoute from "components/Routing/ProtectedRoute";
+import ViewProducts from "views/admin/ViewProducts"
+import CreateProduct from "views/admin/CreateProduct"
+import ViewProductDetails from "views/admin/ViewProductDetails";
 
 export default function Admin() {
   const showHeaderStats = false;
@@ -51,6 +54,10 @@ export default function Admin() {
             <ProtectedRoute path="/admin/viewitems" exact component={ViewItems} />
             <ProtectedRoute path="/admin/viewboqs" exact component={ViewBOQs} />
             <ProtectedRoute path="/admin/viewboq/:id" exact component={ViewBOQ} />
+            <ProtectedRoute path="/admin/viewboq/:id" exact component={ViewBOQ} />
+            <ProtectedRoute path="/admin/addproduct" exact component={CreateProduct} />
+            <ProtectedRoute path="/admin/viewproducts" exact component={ViewProducts} />
+            <ProtectedRoute path="/admin/viewproduct/:id" exact component={ViewProductDetails} />
             <Redirect from="*" to="/admin/dashboard" />
           </Switch>
         </div>
