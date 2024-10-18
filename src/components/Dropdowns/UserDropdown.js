@@ -1,9 +1,10 @@
 import React from "react";
 import { createPopper } from "@popperjs/core";
-import { logout } from "views/auth/util";
+import useAuth from "views/auth/useAuth";
 
 const UserDropdown = () => {
   // dropdown props
+  const {logout} = useAuth();
   const [dropdownPopoverShow, setDropdownPopoverShow] = React.useState(false);
   const btnDropdownRef = React.createRef();
   const popoverDropdownRef = React.createRef();

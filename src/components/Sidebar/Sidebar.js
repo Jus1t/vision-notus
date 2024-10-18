@@ -51,7 +51,7 @@ export default function Sidebar() {
 
   // Tender Section Links with different icons
   const tenderLinks = [
-    { name: "Add Tender", path: "/admin/addlead", icon: "fas fa-file-contract" },
+    { name: "Add Tender", path: "/admin/addtender", icon: "fas fa-file-contract" },
     { name: "Tenders", path: "/admin/tenders", icon: "fas fa-clipboard-list" },
   ];
 
@@ -149,8 +149,6 @@ export default function Sidebar() {
               ]}
             />
 
-            {/* Divider */}
-            <hr className="my-4 md:min-w-full" />
 
             {/* Employee Section */}
             <SidebarSection title="Employee Management" links={employeeLinks} />

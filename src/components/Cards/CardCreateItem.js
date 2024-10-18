@@ -1,26 +1,13 @@
 import React, { useState } from "react";
-
-// Custom styles for input fields
-const customStyles = {
-  control: (provided, state) => ({
-    ...provided,
-    backgroundColor: "white",
-    borderRadius: "0.25rem",
-    borderColor: state.isFocused ? "#3b82f6" : "transparent",
-    boxShadow: state.isFocused ? "0 0 0 3px rgba(59, 130, 246, 0.5)" : "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
-    "&:hover": {
-      borderColor: state.isFocused ? "#3b82f6" : "transparent"
-    }
-  }),
-};
+import api from "views/auth/api";
 
 export default function CardNewItem() {
   // State for form fields
   const [formData, setFormData] = useState({
-    itemSerialNo: "",
-    shortDescription: "",
-    longDescription: "",
-    unit: "",
+    ItemSerialNo: "",
+    ShortDesc: "",
+    LongDesc: "",
+    Uom: "",
   });
 
   // Handle change for input fields
@@ -33,9 +20,11 @@ export default function CardNewItem() {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Form data:", formData);
+    const response = await api.post('/item-details', formData)
+    console.log(response)
     // Here you would typically send the data to your backend
   };
 
@@ -68,8 +57,8 @@ export default function CardNewItem() {
                 <input
                   type="text"
                   className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  id="itemSerialNo"
-                  value={formData.itemSerialNo}
+                  id="ItemSerialNo"
+                  value={formData.ItemSerialNo}
                   onChange={handleInputChange}
                 />
               </div>
@@ -83,8 +72,8 @@ export default function CardNewItem() {
                 <input
                   type="text"
                   className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  id="shortDescription"
-                  value={formData.shortDescription}
+                  id="ShortDesc"
+                  value={formData.ShortDesc}
                   onChange={handleInputChange}
                 />
               </div>
@@ -98,8 +87,8 @@ export default function CardNewItem() {
                 <textarea
                   type="text"
                   className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  id="longDescription"
-                  value={formData.longDescription}
+                  id="LongDesc"
+                  value={formData.LongDesc}
                   onChange={handleInputChange}
                 />
               </div>
@@ -113,8 +102,8 @@ export default function CardNewItem() {
                 <input
                   type="text"
                   className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  id="unit"
-                  value={formData.unit}
+                  id="Uom"
+                  value={formData.Uom}
                   onChange={handleInputChange}
                 />
               </div>

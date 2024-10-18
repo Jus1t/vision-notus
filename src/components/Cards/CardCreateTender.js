@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
+import api from "views/auth/api";
 
-// Custom styles for react-select to match Tailwind classes
 const customStyles = {
   control: (provided, state) => ({
     ...provided,
     backgroundColor: "white",
     borderRadius: "0.25rem",
     borderColor: state.isFocused ? "#3b82f6" : "transparent",
-    boxShadow: state.isFocused ? "0 0 0 3px rgba(59, 130, 246, 0.5)" : "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
-    "&:hover": {
-      borderColor: state.isFocused ? "#3b82f6" : "transparent"
-    }
+    boxShadow: state.isFocused
+      ? "0 0 0 3px rgba(59, 130, 246, 0.5)"
+      : "0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)",
+    "&:hover": { borderColor: state.isFocused ? "#3b82f6" : "transparent" },
   }),
   menu: (provided) => ({
     ...provided,
     borderRadius: "0.375rem",
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)",
   }),
   option: (provided, state) => ({
     ...provided,
@@ -26,101 +26,136 @@ const customStyles = {
   }),
 };
 
-// Sample options for dropdowns
-const publishingAuthorities = [
-  { value: "authority1", label: "Authority 1", phone: "1234567890", email: "contact1@auth1.com" },
-  { value: "authority2", label: "Authority 2", phone: "0987654321", email: "contact2@auth2.com" },
-  { value: "authority3", label: "Authority 3", phone: "1122334455", email: "contact3@auth3.com" },
-];
-
 const emdTypes = [
   { value: "type1", label: "Type 1" },
   { value: "type2", label: "Type 2" },
 ];
 
-const tenderSources = [
-  { value: "source1", label: "Source 1" },
-  { value: "source2", label: "Source 2" },
+const banks = [
+  { value: "bank1", label: "Bank 1" },
+  { value: "bank2", label: "Bank 2" },
 ];
 
 export default function CardNewTender() {
-  // State for form fields
   const [formData, setFormData] = useState({
-    companyReferenceNo: "",
-    publishingAuthority: null,
-    tenderNo: "",
-    tenderPublishingDate: "",
-    tenderSubmissionDate: "",
-    tenderFee: "",
+    CompanyReferenceNo: "",
+    PublisinghAuthObjectId: null,
+    TenderNo: "",
+    TenderPublisingDate: "",
+    TenderSubmissionDate: "",
+    TenderFee: "",
     emdType: null,
     emdValidUpto: "",
     emdAmount: "",
+    emdDate: "",
+    bank: null,
+    validityRequired: "",
+    scanCopy: null,
     phoneNumber: "",
-    email: "",
-    tenderSource: null,
+    LeadEmail: "",
+    TenderSource: null,
   });
-
-  const [NewTenderSourceAdded, setNewTenderSourceAdded] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [publishingAuthorities, setPublishingAuthorities] = useState([]);
+  const [tenderSources, setTenderSources] = useState([]);
   const [reminder, setReminder] = useState(null);
+  const [newTenderSourceAdded, setNewTenderSourceAdded] = useState(false);
 
-  // Handle change for input fields
-  const handleInputChange = (e) => {
-    const { id, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [id]: value,
+  const handleInputChange = ({ target: { id, value } }) =>
+    setFormData((prev) => ({ ...prev, [id]: value }));
+
+  const handleSelectChange = (selectedOption, field) => {
+    if (selectedOption.__isNew__) setNewTenderSourceAdded(true);
+    setFormData((prev) => ({ ...prev, [field]: selectedOption }));
+  };
+
+  const handleFileChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      scanCopy: e.target.files[0], // Store the file
     }));
   };
 
-  // Handle change for select fields
-  const handleSelectChange = (selectedOption) => {
-    if (selectedOption.__isNew__) {
-      // A new option was added
-      setNewTenderSourceAdded(true);
-    } else {
-      setNewTenderSourceAdded(false);
-    }
-    console.log(NewTenderSourceAdded)
-    setFormData((prevData) => ({
-      ...prevData,
-      tenderSource: selectedOption,
-    }));
-  };
-
-  // Auto-set reminder 5 days before submission
   useEffect(() => {
-    if (formData.tenderSubmissionDate) {
-      const submissionDate = new Date(formData.tenderSubmissionDate);
+    const fetchData = async (url, setState, transform) => {
+      try {
+        const response = await api.get(url);
+        setState(transform(response.data));
+      } catch (error) {
+        console.error(`Error fetching ${url}:`, error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData("/publishing-auth", setPublishingAuthorities, (data) =>
+      data.map(({ _id, name }) => ({ value: _id, label: name }))
+    );
+    fetchData("/tender-source", setTenderSources, (data) =>
+      data.map(({ _id, name }) => ({ value: _id, label: name }))
+    );
+  }, []);
+
+  useEffect(() => {
+    if (formData.TenderSubmissionDate) {
+      const submissionDate = new Date(formData.TenderSubmissionDate);
       const reminderDate = new Date(submissionDate);
       reminderDate.setDate(submissionDate.getDate() - 5);
-      setReminder(reminderDate.toISOString().split("T")[0]); // Format as YYYY-MM-DD
+      setReminder(reminderDate.toISOString().split("T")[0]);
     }
-  }, [formData.tenderSubmissionDate]);
+  }, [formData.TenderSubmissionDate]);
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form data:", formData);
-    if (NewTenderSourceAdded && formData.tenderSource) {
+    if (newTenderSourceAdded && formData.TenderSource) {
       try {
-        const response = await fetch("/api/tender-sources", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name: formData.tenderSource.label }),
-        });
-
-        if (response.ok) {
-          console.log("New tender source added successfully!");
-        } else {
-          console.error("Error adding new tender source.");
-        }
+        const newSource = { name: formData.TTenderSource.label };
+        await api.post("/tender-source", newSource);
       } catch (error) {
         console.error("Error during API call:", error);
       }
     }
-    // Here you would typically send the data to your backend
+    
+  };
+
+  const renderInput = (id, label, type = "text", placeholder = "") => (
+    <div className="w-full lg:w-6/12 px-4">
+      <div className="relative w-full mb-3">
+        <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor={id}>
+          {label}
+        </label>
+        <input
+          type={type}
+          id={id}
+          value={formData[id]}
+          onChange={handleInputChange}
+          placeholder={placeholder}
+          className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
+        />
+      </div>
+    </div>
+  );
+
+  const renderSelect = (id, label, options, isCreatable = false) => {
+    const SelectComponent = isCreatable ? CreatableSelect : Select;
+    return (
+      <div className="w-full lg:w-6/12 px-4">
+        <div className="relative w-full mb-3">
+          <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor={id}>
+            {label}
+          </label>
+          <SelectComponent
+            options={options}
+            styles={customStyles}
+            placeholder={`Select ${label}`}
+            id={id}
+            value={formData[id]}
+            onChange={(selectedOption) => handleSelectChange(selectedOption, id)}
+            isSearchable
+          />
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -129,8 +164,7 @@ export default function CardNewTender() {
         <div className="text-center flex justify-between">
           <h6 className="text-blueGray-700 text-xl font-bold">New Tender</h6>
           <button
-            className="bg-lightBlue-500 text-white active:bg-lightBlue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
-            type="button"
+            className="bg-lightBlue-500 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none ease-linear transition-all duration-150"
             onClick={handleSubmit}
           >
             Save
@@ -139,230 +173,44 @@ export default function CardNewTender() {
       </div>
       <div className="flex-auto px-4 lg:px-10 py-10 pt-0">
         <form onSubmit={handleSubmit}>
-          {/* Section 1: Tender Information */}
-          <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">
-            Tender Information
-          </h6>
+          <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">Tender Information</h6>
           <div className="flex flex-wrap">
-            {/* Company Reference No. */}
+            {renderInput("CompanyReferenceNo", "Company Reference No.")}
+            {renderSelect("PublisinghAuthObjectId", "Publishing Authority", publishingAuthorities)}
+            {renderInput("TenderNo", "Tender No.")}
+            {renderInput("TenderPublisingDate", "Tender Publishing Date", "date")}
+            {renderInput("TenderSubmissionDate", "Tender Submission Date", "date")}
+            {reminder && <p className="text-sm text-red-500 mt-2">Reminder: {reminder} (5 days before submission)</p>}
+            {renderInput("TenderFee", "Tender Fee", "number")}
+          </div>
+
+          <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">EMD Details</h6>
+          <div className="flex flex-wrap">
+            {renderSelect("emdType", "EMD Type", emdTypes)}
+            {renderInput("emdAmount", "EMD Amount", "number")}
+            {renderInput("emdDate", "EMD Date", "date")}
+            {renderInput("validityRequired", "Validity Required (Days)", "number")}
+            {renderSelect("bank", "Bank", banks)}
             <div className="w-full lg:w-6/12 px-4">
               <div className="relative w-full mb-3">
-                <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="companyReferenceNo">
-                  Company Reference No.
+                <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="scanCopy">
+                  Scan Copy
                 </label>
                 <input
-                  type="text"
-                  id="companyReferenceNo"
-                  value={formData.companyReferenceNo}
-                  onChange={handleInputChange}
-                  className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  placeholder="Company Reference No."
-                />
-              </div>
-            </div>
-
-            {/* Publishing Authority */}
-            <div className="w-full lg:w-6/12 px-4">
-              <div className="relative w-full mb-3">
-                <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="publishingAuthority">
-                  Publishing Authority
-                </label>
-                <Select
-                  options={publishingAuthorities}
-                  styles={customStyles}
-                  placeholder="Select Authority"
-                  id="publishingAuthority"
-                  value={formData.publishingAuthority}
-                  onChange={(selectedOption) =>
-                    handleSelectChange(selectedOption, { id: "publishingAuthority" })
-                  }
-                  isSearchable
-                />
-              </div>
-            </div>
-
-            {/* Tender No. */}
-            <div className="w-full lg:w-6/12 px-4">
-              <div className="relative w-full mb-3">
-                <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="tenderNo">
-                  Tender No.
-                </label>
-                <input
-                  type="text"
-                  id="tenderNo"
-                  value={formData.tenderNo}
-                  onChange={handleInputChange}
-                  className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  placeholder="Tender No."
-                />
-              </div>
-            </div>
-
-            {/* Tender Publishing Date */}
-            <div className="w-full lg:w-6/12 px-4">
-              <div className="relative w-full mb-3">
-                <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="tenderPublishingDate">
-                  Tender Publishing Date
-                </label>
-                <input
-                  type="date"
-                  id="tenderPublishingDate"
-                  value={formData.tenderPublishingDate}
-                  onChange={handleInputChange}
-                  className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                />
-              </div>
-            </div>
-
-            {/* Tender Submission Date */}
-            <div className="w-full lg:w-6/12 px-4">
-              <div className="relative w-full mb-3">
-                <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="tenderSubmissionDate">
-                  Tender Submission Date
-                </label>
-                <input
-                  type="date"
-                  id="tenderSubmissionDate"
-                  value={formData.tenderSubmissionDate}
-                  onChange={handleInputChange}
-                  className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                />
-                {reminder && (
-                  <p className="text-sm text-red-500 mt-2">
-                    Reminder: {reminder} (5 days before submission)
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Tender Fee */}
-            <div className="w-full lg:w-6/12 px-4">
-              <div className="relative w-full mb-3">
-                <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="tenderFee">
-                  Tender Fee
-                </label>
-                <input
-                  type="number"
-                  id="tenderFee"
-                  value={formData.tenderFee}
-                  onChange={handleInputChange}
+                  type="file"
+                  id="scanCopy"
+                  onChange={handleFileChange}
                   className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
                 />
               </div>
             </div>
           </div>
 
-          {/* Section 2: EMD Details */}
-          <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">
-            EMD Details
-          </h6>
+          <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">Contact Information</h6>
           <div className="flex flex-wrap">
-            {/* EMD Type */}
-            <div className="w-full lg:w-6/12 px-4">
-              <div className="relative w-full mb-3">
-                <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="emdType">
-                  EMD Type
-                </label>
-                <Select
-                  options={emdTypes}
-                  styles={customStyles}
-                  placeholder="Select EMD Type"
-                  id="emdType"
-                  value={formData.emdType}
-                  onChange={(selectedOption) => handleSelectChange(selectedOption, { id: "emdType" })}
-                />
-              </div>
-            </div>
-
-            {/* EMD Amount */}
-            <div className="w-full lg:w-6/12 px-4">
-              <div className="relative w-full mb-3">
-                <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="emdAmount">
-                  EMD Amount
-                </label>
-                <input
-                  type="number"
-                  id="emdAmount"
-                  value={formData.emdAmount}
-                  onChange={handleInputChange}
-                  className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                />
-              </div>
-            </div>
-
-            {/* EMD Validity */}
-            <div className="w-full lg:w-6/12 px-4">
-              <div className="relative w-full mb-3">
-                <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="emdValidUpto">
-                  EMD Valid Upto
-                </label>
-                <input
-                  type="date"
-                  id="emdValidUpto"
-                  value={formData.emdValidUpto}
-                  onChange={handleInputChange}
-                  className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Section 3: Contact Information */}
-          <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">
-            Contact Information
-          </h6>
-          <div className="flex flex-wrap">
-            {/* Phone Number */}
-            <div className="w-full lg:w-6/12 px-4">
-              <div className="relative w-full mb-3">
-                <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="phoneNumber">
-                  Phone Number
-                </label>
-                <input
-                  type="text"
-                  id="phoneNumber"
-                  value={formData.phoneNumber}
-                  onChange={handleInputChange}
-                  className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  placeholder="Phone Number"
-                />
-              </div>
-            </div>
-
-            {/* Email */}
-            <div className="w-full lg:w-6/12 px-4">
-              <div className="relative w-full mb-3">
-                <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="email">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                  placeholder="Email"
-                />
-              </div>
-            </div>
-
-            {/* Tender Source */}
-            <div className="w-full lg:w-6/12 px-4">
-              <div className="relative w-full mb-3">
-                <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="tender-source">
-                  Tender Source
-                </label>
-                <CreatableSelect
-                  options={tenderSources}
-                  styles={customStyles}
-                  placeholder="Select or Add Tender Source"
-                  id="tenderSource"
-                  value={formData.tenderSource}
-                  onChange={handleSelectChange}
-                  isSearchable
-                />
-              </div>
-            </div>
+            {renderInput("phoneNumber", "Phone Number")}
+            {renderInput("LeadEmail", "Email", "email")}
+            {renderSelect("TenderSource", "Tender Source", tenderSources, true)}
           </div>
         </form>
       </div>

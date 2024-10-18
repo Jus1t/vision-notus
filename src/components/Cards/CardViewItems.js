@@ -1,38 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
 import api from 'views/auth/api'; // Replace with your actual API import
 
 // Dummy data in case API call fails
 const dummyItems = [
   {
     _id: '1',
-    itemSerialNo: '1001',
-    shortDescription: 'Item 1 short desc',
-    longDescription: 'This is a long description of item 1',
-    unit: 'pcs',
+    ItemSerialNo: '1001',
+    ShortDesc: 'Item 1 short desc',
+    LongDesc: 'This is a long description of item 1',
+    Uom: 'pcs',
   },
   {
     _id: '2',
-    itemSerialNo: '1002',
-    shortDescription: 'Item 2 short desc',
-    longDescription: 'This is a long description of item 2',
-    unit: 'kg',
+    ItemSerialNo: '1002',
+    ShortDesc: 'Item 2 short desc',
+    LongDesc: 'This is a long description of item 2',
+    Uom: 'kg',
   },
   {
     _id: '3',
-    itemSerialNo: '1003',
-    shortDescription: 'Item 3 short desc',
-    longDescription: 'This is a long description of item 3',
-    unit: 'ltr',
+    ItemSerialNo: '1003',
+    ShortDesc: 'Item 3 short desc',
+    LongDesc: 'This is a long description of item 3',
+    Uom: 'ltr',
   },
 ];
 
 const CardViewItems = ({ color = "light" }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingItemId, setEditingItemId] = useState(null);
+  const [editedItemData, setEditedItemData] = useState({});
   const [currentPage, setCurrentPage] = useState(1); // Pagination state
   const itemsPerPage = 10; // Number of items per page
-  const history = useHistory();
 
   const columnbaseclass =
     "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left ";
@@ -44,7 +44,7 @@ const CardViewItems = ({ color = "light" }) => {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const response = await api.get('/items'); // Replace with your actual endpoint
+        const response = await api.get('/item-details'); // Replace with your actual endpoint
         setItems(response.data);
       } catch (error) {
         console.error('Error fetching items, using dummy data:', error);
@@ -57,15 +57,44 @@ const CardViewItems = ({ color = "light" }) => {
     fetchItems();
   }, []);
 
-  const handleEditItem = (itemId) => {
-    history.push(`/admin/item/edit/${itemId}`);
+  const handleEditItem = (item) => {
+    setEditingItemId(item._id);
+    setEditedItemData({
+      ItemSerialNo: item.ItemSerialNo,
+      ShortDesc: item.ShortDesc,
+      LongDesc: item.LongDesc,
+      Uom: item.Uom,
+    });
+  };
+
+  const handleSaveItem = async (itemId) => {
+    try {
+      // Make API call to update the item
+      await api.put(`/item-details/${itemId}`, editedItemData);
+      // Update the item in the state
+      setItems((prevItems) =>
+        prevItems.map((item) =>
+          item._id === itemId ? { ...item, ...editedItemData } : item
+        )
+      );
+      // Reset editing state
+      setEditingItemId(null);
+      setEditedItemData({});
+    } catch (error) {
+      console.error("Error updating item:", error);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingItemId(null);
+    setEditedItemData({});
   };
 
   const handleDeleteItem = async (itemId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this item?");
     if (confirmDelete) {
       try {
-        await api.delete(`/items/${itemId}`); // Replace with your delete API endpoint
+        await api.delete(`/item-details/${itemId}`);
         setItems((prevItems) => prevItems.filter((item) => item._id !== itemId));
       } catch (error) {
         console.error("Error deleting item:", error);
@@ -133,28 +162,86 @@ const CardViewItems = ({ color = "light" }) => {
           <tbody>
             {currentItems.map((item) => (
               <tr key={item._id}>
-                <td className={tdClass}>{item.itemSerialNo}</td>
-                <td className={tdClass}>{item.shortDescription}</td>
-                <td className={tdClass}>{item.longDescription}</td>
-                <td className={tdClass}>{item.unit}</td>
-                <td className={tdClass}>
-                  {/* Edit Button */}
-                  <button
-                    type='button'
-                    onClick={() => handleEditItem(item._id)}
-                    className="bg-yellow-500 text-white active:bg-yellow-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                  >
-                    Edit
-                  </button>
-                  {/* Delete Button */}
-                  <button
-                    type='button'
-                    onClick={() => handleDeleteItem(item._id)}
-                    className="bg-red-500 text-white active:bg-red-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                  >
-                    Delete
-                  </button>
-                </td>
+                {item._id === editingItemId ? (
+                  // Render input fields
+                  <>
+                    <td className={tdClass}>
+                      <input
+                        type="text"
+                        value={editedItemData.ItemSerialNo}
+                        onChange={(e) => setEditedItemData({ ...editedItemData, ItemSerialNo: e.target.value })}
+                        className="w-full px-2 py-1 border rounded"
+                      />
+                    </td>
+                    <td className={tdClass}>
+                      <input
+                        type="text"
+                        value={editedItemData.ShortDesc}
+                        onChange={(e) => setEditedItemData({ ...editedItemData, ShortDesc: e.target.value })}
+                        className="w-full px-2 py-1 border rounded"
+                      />
+                    </td>
+                    <td className={tdClass}>
+                      <input
+                        type="text"
+                        value={editedItemData.LongDesc}
+                        onChange={(e) => setEditedItemData({ ...editedItemData, LongDesc: e.target.value })}
+                        className="w-full px-2 py-1 border rounded"
+                      />
+                    </td>
+                    <td className={tdClass}>
+                      <input
+                        type="text"
+                        value={editedItemData.Uom}
+                        onChange={(e) => setEditedItemData({ ...editedItemData, Uom: e.target.value })}
+                        className="w-full px-2 py-1 border rounded"
+                      />
+                    </td>
+                    <td className={tdClass}>
+                      {/* Save and Cancel Buttons */}
+                      <button
+                        type='button'
+                        onClick={() => handleSaveItem(item._id)}
+                        className="bg-lightBlue-500 text-white active:bg-green-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                      >
+                        Save
+                      </button>
+                      <button
+                        type='button'
+                        onClick={handleCancelEdit}
+                        className="bg-orange-500 text-white active:bg-gray-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                      >
+                        Cancel
+                      </button>
+                    </td>
+                  </>
+                ) : (
+                  // Render normal display
+                  <>
+                    <td className={tdClass}>{item.ItemSerialNo}</td>
+                    <td className={tdClass}>{item.ShortDesc}</td>
+                    <td className={tdClass}>{item.LongDesc}</td>
+                    <td className={tdClass}>{item.Uom}</td>
+                    <td className={tdClass}>
+                      {/* Edit Button */}
+                      <button
+                        type='button'
+                        onClick={() => handleEditItem(item)}
+                        className="bg-yellow-500 text-white active:bg-yellow-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                      >
+                        Edit
+                      </button>
+                      {/* Delete Button */}
+                      <button
+                        type='button'
+                        onClick={() => handleDeleteItem(item._id)}
+                        className="bg-red-500 text-white active:bg-red-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </>
+                )}
               </tr>
             ))}
           </tbody>

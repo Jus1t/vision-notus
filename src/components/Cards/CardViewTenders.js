@@ -12,7 +12,7 @@ const CardTenders = ({ color = "light" }) => {
   useEffect(() => {
     const fetchTenders = async () => {
       try {
-        const response = await api.get('/tenders'); // Fetch tenders data from your API
+        const response = await api.get('/lead'); // Fetch tenders data from your API
         setTenders(response.data);
         setLoading(false);
       } catch (error) {

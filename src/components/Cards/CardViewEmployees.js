@@ -19,7 +19,7 @@ const CardViewEmployees = ({ color = "light" }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await api.get('/user-profiles')
+        const response = await api.get('/user-profile')
         console.log(response.data)
         setUsers(response.data)
 
@@ -39,6 +39,13 @@ const CardViewEmployees = ({ color = "light" }) => {
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
+  };
+
+  const formatRoleName = (role) => {
+    if (!role) return '';
+    return role
+      .replace(/([A-Z])/g, ' $1') // Insert space before capital letters
+      .replace(/^./, function(str){ return str.toUpperCase(); }); // Capitalize the first letter
   };
 
   // Get current users for pagination
@@ -98,7 +105,7 @@ const CardViewEmployees = ({ color = "light" }) => {
               {currentUsers.map((user) => (
                 <tr key={user._id}>
                   <td className={tdClass}> {user.FirstName} {user.LastName} </td>
-                  <td className={tdClass}> {user.Role} </td>
+                  <td className={tdClass}> {formatRoleName(user.Role)} </td>
                   <td className={tdClass}> {user.Email}  </td>
                   <td className={tdClass}> {user.PhoneNumber} </td>
                   <td className={tdClass}> <button

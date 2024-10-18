@@ -4,22 +4,37 @@ import api from 'views/auth/api';
 
 export default function CardEmployeeDetails() {
   const [employee, setEmployee] = useState(null);
+  const [userprofile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { id } = useParams();
-
   const [isEditMode, setIsEditMode] = useState(false);
-  const [formValues, setFormValues] = useState(employee);
-  const [originalValues, setOriginalValues] = useState(employee);
+  const [formEmpDetails, setFormEmpDetails] = useState({});
+  const [originalValues, setOriginalValues] = useState({});
 
   useEffect(() => {
     const fetchEmployeeDetails = async () => {
       try {
+        const res = await api.get(`/user-profile/getbyempid/${id}`);
+        setUserProfile(res.data);
+
         const response = await api.get(`/employee-details/${id}`);
-        console.log(response)
-        setEmployee(response.data);
-        setFormValues(response.data);
-        setOriginalValues(response.data);
+        const employeeData = response.data;
+
+        // Format date fields to YYYY-MM-DD for input type="date"
+        const formattedEmpDetails = {
+          ...employeeData,
+          DateOfBirth: employeeData.DateOfBirth
+            ? new Date(employeeData.DateOfBirth).toISOString().substr(0, 10)
+            : '',
+          DlValidityUpto: employeeData.DlValidityUpto
+            ? new Date(employeeData.DlValidityUpto).toISOString().substr(0, 10)
+            : '',
+        };
+        console.log(response.data)
+        setEmployee(employeeData);
+        setFormEmpDetails(formattedEmpDetails);
+        setOriginalValues(formattedEmpDetails);
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch employee details');
@@ -35,25 +50,46 @@ export default function CardEmployeeDetails() {
   };
 
   const handleCancelClick = () => {
-    setFormValues(originalValues); // Reset to original values
+    setFormEmpDetails(originalValues); // Reset to original values
     setIsEditMode(false); // Exit edit mode
-    console.log(formValues)
   };
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-      setFormValues((formValues) => ({
-        ...formValues,
-        [id]: value, // Set the regular input value
+    if (id === 'Role') {
+      setUserProfile((values) => ({
+        ...values,
+        [id]: value,
       }));
+    }
+    else {
+      setFormEmpDetails((formValues) => ({
+        ...formValues,
+        [id]: value,
+      }));
+    }
   };
 
   // Handle submit
-  const handleSubmitClick = () => {
-    // Make an API call with formValues
-    // submitApiCall(formValues);
-    setOriginalValues(formValues); // Update original values after successful submission
-    setIsEditMode(false); // Exit edit mode
+  const handleSubmitClick = async () => {
+    try {
+      await api.put(`/employee-details/${id}`, formEmpDetails);
+
+      const user = {
+        FirstName: formEmpDetails.FirstName,
+        LastName: formEmpDetails.LastName,
+        PhoneNumber: formEmpDetails.ContactDetails,
+        Email: userprofile.Email,
+        Role: userprofile.Role,
+        EmployeeObjectId: id,
+      };
+      await api.put(`/user-profile/${userprofile._id}`, user);
+
+      setOriginalValues(formEmpDetails); // Update original values after successful submission
+      setIsEditMode(false); // Exit edit mode
+    } catch (error) {
+      console.error('Error updating employee details:', error);
+    }
   };
 
   if (loading) return <div>Loading...</div>;
@@ -93,74 +129,207 @@ export default function CardEmployeeDetails() {
               </button>
             </div>
           )}
-
         </div>
       </div>
       <div className="flex-auto px-4 lg:px-10 py-10 pt-0">
         <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">
+          Profile
+        </h6>
+        <div className="flex flex-wrap">
+          <InfoField
+            name="FirstName"
+            label="First Name"
+            value={formEmpDetails.FirstName}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+          />
+          <InfoField
+            name="LastName"
+            label="Last Name"
+            value={formEmpDetails.LastName}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+          />
+          <InfoField
+            name="Role"
+            label="Role"
+            value={userprofile.Role}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+            isSelect
+            options={[
+              { value: '', label: 'Select Role' },
+              { value: 'boardMember', label: 'Board Member' },
+              { value: 'planningTeam', label: 'Planning Team' },
+              { value: 'financeTeam', label: 'Finance Team' },
+              { value: 'projectManager', label: 'Project Manager' },
+              { value: 'supervisor', label: 'Supervisor' },
+            ]}
+          />
+          <InfoField
+            name="ContactDetails"
+            label="Phone"
+            value={formEmpDetails.ContactDetails}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+          />
+          <InfoField
+            name="DateOfBirth"
+            label="Date of Birth"
+            value={formEmpDetails.DateOfBirth}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+            isDate
+          />
+        </div>
+
+        <hr className="mt-6 border-b-1 border-blueGray-300" />
+
+        {/* Continue updating other sections similarly */}
+
+        {/* Contact Information */}
+        <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">
           Personal Information
         </h6>
         <div className="flex flex-wrap">
-          <InfoField name="FirstName" label="First Name" value={formValues.FirstName} isEditMode={isEditMode} handleInputChange={handleChange}/>
-          <InfoField name="LastName" label="Last Name" value={formValues.LastName} isEditMode={isEditMode} handleInputChange={handleChange}/>
-          <InfoField name="DateOfBirth" label="Date of Birth" value={formValues.DateOfBirth} isEditMode={isEditMode} handleInputChange={handleChange} />
-          <InfoField name="FathersName" label="Father's Name" value={formValues.FathersName} isEditMode={isEditMode} handleInputChange={handleChange}/>
-          <InfoField name="SpouseName" label="Spouse Name" value={formValues.SpouseName} isEditMode={isEditMode} handleInputChange={handleChange}/>
+
+          <InfoField
+            name="PresentAddress"
+            label="Present Address"
+            value={formEmpDetails.PresentAddress}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+          />
+          <InfoField
+            name="PermanentAddress"
+            label="Permanent Address"
+            value={formEmpDetails.PermanentAddress}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+          />
+          <InfoField
+            name="FathersName"
+            label="Father's Name"
+            value={formEmpDetails.FathersName}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+          />
+          <InfoField
+            name="FathersContactDetails"
+            label="Father's Contact"
+            value={formEmpDetails.FathersContactDetails}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+          />
+          <InfoField
+            name="SpouseName"
+            label="Spouse Name"
+            value={formEmpDetails.SpouseName}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+          />
+          <InfoField
+            name="SpouseContactDetails"
+            label="Spouse Contact"
+            value={formEmpDetails.SpouseContactDetails}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+          />
+          {/* ... other contact fields ... */}
         </div>
 
+        {/* Identification Details */}
         <hr className="mt-6 border-b-1 border-blueGray-300" />
 
         <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">
-          Contact Information
+          Document Details
         </h6>
         <div className="flex flex-wrap">
-          <InfoField name="ContactDetails" label="Contact Details" value={formValues.ContactDetails} isEditMode={isEditMode} handleInputChange={handleChange} />
-          <InfoField name="FathersContactDetails" label="Father's Contact" value={formValues.FathersContactDetails} isEditMode={isEditMode}handleInputChange={handleChange} />
-          <InfoField name="SpouseContactDetails" label="Spouse Contact" value={formValues.SpouseContactDetails} isEditMode={isEditMode} handleInputChange={handleChange}/>
-          <InfoField name="PresentAddress" label="Present Address" value={formValues.PresentAddress} fullWidth isEditMode={isEditMode} handleInputChange={handleChange}/>
-          <InfoField name="PermanentAddress" label="Permanent Address" value={formValues.PermanentAddress} fullWidth isEditMode={isEditMode} handleInputChange={handleChange}/>
+          <InfoField
+            name="AadhaarDetails"
+            label="Aadhaar Details"
+            value={formEmpDetails.AadhaarDetails}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+          />
+          <InfoField
+            name="PanDetails"
+            label="PAN Details"
+            value={formEmpDetails.PanDetails}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+          />
+          <InfoField
+            name="DrivingLicenseNo"
+            label="Driving License No"
+            value={formEmpDetails.DrivingLicenseNo}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+          />
+          <InfoField
+            name="DlValidityUpto"
+            label="DL Validity"
+            value={formEmpDetails.DlValidityUpto}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+            isDate
+          />
         </div>
 
-        <hr className="mt-6 border-b-1 border-blueGray-300" />
-
         <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">
-          Identification Details
+          Bank and Other Details
         </h6>
         <div className="flex flex-wrap">
-          <InfoField name="AadhaarDetails" label="Aadhaar Details" value={formValues.AadhaarDetails} isEditMode={isEditMode} handleInputChange={handleChange}/>
-          <InfoField name="PanDetails" label="PAN Details" value={formValues.PanDetails} isEditMode={isEditMode} handleInputChange={handleChange}/>
-          <InfoField name="DrivingLicenseNo" label="Driving License No" value={formValues.DrivingLicenseNo} isEditMode={isEditMode} handleInputChange={handleChange}/>
-          <InfoField name="DlValidityUpto" label="DL Validity" value={new Date(formValues.DlValidityUpto).toLocaleDateString()} isEditMode={isEditMode} handleInputChange={handleChange}/>
-        </div>
-
-        <hr className="mt-6 border-b-1 border-blueGray-300" />
-
-        <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">
-          Employment Details
-        </h6>
-        <div className="flex flex-wrap">
-          <InfoField name="PfNo" label="PF Number" value={formValues.PfNo} isEditMode={isEditMode} handleInputChange={handleChange}/>
-          <InfoField name="EsiCode" label="ESI Code" value={formValues.EsiCode} isEditMode={isEditMode} handleInputChange={handleChange}/>
-        </div>
-
-        <hr className="mt-6 border-b-1 border-blueGray-300" />
-
-        <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">
-          Bank Details
-        </h6>
-        <div className="flex flex-wrap">
-          <InfoField name="BankAccountNo" label="Bank Account No" value={formValues.BankAccountNo} isEditMode={isEditMode} handleInputChange={handleChange}/>
-          <InfoField name="IfscCode" label="IFSC Code" value={formValues.IfscCode} isEditMode={isEditMode} handleInputChange={handleChange}/>
-          <InfoField name="NameOfBankAndBranch" label="Bank and Branch" value={formValues.NameOfBankAndBranch} fullWidth isEditMode={isEditMode} handleInputChange={handleChange}/>
+          <InfoField
+            name="NameOfBankAndBranch"
+            label="Bank and Branch"
+            value={formEmpDetails.NameOfBankAndBranch}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+          />
+          <InfoField
+            name="BankAccountNo"
+            label="Account No"
+            value={formEmpDetails.BankAccountNo}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+          />
+          <InfoField
+            name="IfscCode"
+            label="IFSC"
+            value={formEmpDetails.IfscCode}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+          />
+          <InfoField
+            name="PfNo"
+            label="PF No"
+            value={formEmpDetails.PfNo}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+          />
         </div>
       </div>
     </div>
   );
 }
 
-const InfoField = ({ label, value, name, handleInputChange, isEditMode, fullWidth = false }) => {
-  let type = "text"
-  if(name==="DateOfBirth" || name==="DlValidityUpto") type = "date";
+const InfoField = ({
+  label,
+  value,
+  name,
+  handleInputChange,
+  isEditMode,
+  fullWidth = false,
+  isDate = false,
+  isSelect = false,
+  options = [],
+}) => {
+  let type = 'text';
+  if (isDate) type = 'date';
+
+  const formattedValue = isDate && value ? new Date(value).toLocaleDateString() : value;
+
   return (
     <div className={`${fullWidth ? 'w-full' : 'w-full lg:w-6/12'} px-4`}>
       <div className="relative w-full mb-3">
@@ -170,20 +339,45 @@ const InfoField = ({ label, value, name, handleInputChange, isEditMode, fullWidt
 
         {/* If isEditMode is true, show input field */}
         {isEditMode ? (
-          <input
-            type={type}
-            name={name}
-            id={name}
-            value={value || ''}
-            onChange={handleInputChange} // Call the parent's handleInputChange method
-            className="border-0 px-3 py-3 text-blueGray-600 bg-white rounded text-sm shadow w-full"
-          />
-        ) : ( 
+          isSelect ? (
+            <select
+              id={name}
+              value={value || ''}
+              onChange={handleInputChange}
+              className="border-0 px-3 py-3 text-blueGray-600 bg-white rounded text-sm shadow w-full"
+            >
+              {options.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type={type}
+              name={name}
+              id={name}
+              value={value || ''}
+              onChange={handleInputChange}
+              className="border-0 px-3 py-3 text-blueGray-600 bg-white rounded text-sm shadow w-full"
+            />
+          )
+        ) : (
           <p className="border-0 px-3 py-3 text-blueGray-600 bg-white rounded text-sm shadow w-full">
-            {value || 'N/A'}
+            {isSelect ? formatRoleName(value) : formattedValue || 'N/A'}
           </p>
         )}
       </div>
     </div>
   );
+};
+
+// Utility function to format role names
+const formatRoleName = (role) => {
+  if (!role) return 'N/A';
+  return role
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, function (str) {
+      return str.toUpperCase();
+    });
 };

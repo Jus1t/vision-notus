@@ -130,7 +130,7 @@ export default function NewEmployeeForm() {
         PhoneNumber: formData.ContactDetails,
         Email: formData.email,
         Role: formData.role,
-        EmployeeObjectId: employeeId // Store the employee ID here
+        EmployeeObjectId: employeeId
       };
 
       const credentials = {

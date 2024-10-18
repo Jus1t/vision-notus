@@ -1,30 +1,24 @@
 import React, {useState} from "react";
-import loginUser from './loginUser';
-import {jwtDecode} from 'jwt-decode';
+import useAuth from "views/auth/useAuth";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
-
-export default function Login() {
+export default function LoginPage() {
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [userRole, setUserRole] = useState(null);
-
   const history = useHistory();
   // const location = useLocation();
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    const token = await loginUser(email, password);
 
-    if (token) {
-      const decodedToken = jwtDecode(token);
-      setUserRole(decodedToken.role);
-      localStorage.setItem('token', token);
-      localStorage.setItem('authorization', token);
-      history.push('/admin/dashboard'); 
-    } else {
-      alert('Login Unsuccessful');
+  const handleLogin = async () => {
+    try {
+      console.log("login pressed")
+      // Assuming login is an asynchronous function that handles authentication
+      const token = await login(email, password); // Pass the credentials to the login function
+      history.push('/admin/dashboard')
+    } catch (err) {
+      console.log(err)
+      console.error("Failed to log in. Please check your credentials."); // Set error if login fails
     }
   };
-
   return (
     <>
       <div className="container mx-auto px-4 h-full">
