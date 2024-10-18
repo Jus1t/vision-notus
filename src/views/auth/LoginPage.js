@@ -1,19 +1,39 @@
-import React, {useState} from "react";
-import useAuth from "views/auth/useAuth";
+import React, {useEffect, useState} from "react";
+import axios from 'axios';
+
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
+
 export default function LoginPage() {
-  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const history = useHistory();
-  // const location = useLocation();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if(!loading && isAuthenticated){
+      history.push('/admin/dashboard')
+    }
+  }, [loading, isAuthenticated, history]);
+
+  const login = async (email, password) => {
+    try {
+      setLoading(true);
+      const response = await axios.post('http://localhost:3000/api/login/', { Email:email, Password:password });
+      const { accessToken } = response.data;
+      localStorage.setItem('token', accessToken);
+      if(accessToken !== null)setIsAuthenticated(true);
+      return accessToken
+    } catch (error) {
+      throw error;
+    }
+  };
 
   const handleLogin = async () => {
     try {
-      console.log("login pressed")
-      // Assuming login is an asynchronous function that handles authentication
-      const token = await login(email, password); // Pass the credentials to the login function
-      history.push('/admin/dashboard')
+      await login(email, password); // Pass the credentials to the login function
+      setLoading(false)
+
     } catch (err) {
       console.log(err)
       console.error("Failed to log in. Please check your credentials."); // Set error if login fails

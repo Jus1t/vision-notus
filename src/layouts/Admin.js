@@ -8,7 +8,6 @@ import HeaderStats from "components/Headers/HeaderStats.js";
 
 // views
 import Dashboard from "views/admin/Dashboard.js";
-import Maps from "views/admin/Maps.js";
 import Settings from "views/admin/Settings.js";
 import Tables from "views/admin/Tables.js";
 import ViewEmployees from "views/admin/ViewEmployees";
@@ -38,7 +37,6 @@ export default function Admin() {
         <div className="px-4 md:px-10 mx-auto w-full -m-24">
           <Switch>
             <ProtectedRoute path="/admin/dashboard" exact component={Dashboard} />
-            <ProtectedRoute path="/admin/maps" exact component={Maps} />
             <ProtectedRoute path="/admin/settings" exact component={Settings} />
             <ProtectedRoute path="/admin/tables" exact component={Tables} />
             <ProtectedRoute path="/admin/addemployee" exact component={CreateEmployee} />

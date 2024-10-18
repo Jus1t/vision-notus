@@ -20,7 +20,6 @@ const CardViewEmployees = ({ color = "light" }) => {
     const fetchUsers = async () => {
       try {
         const response = await api.get('/user-profile')
-        console.log(response.data)
         setUsers(response.data)
 
         setLoading(false);
