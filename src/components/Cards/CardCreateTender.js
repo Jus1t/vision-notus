@@ -26,16 +26,6 @@ const customStyles = {
   }),
 };
 
-const emdTypes = [
-  { value: "type1", label: "Type 1" },
-  { value: "type2", label: "Type 2" },
-];
-
-const banks = [
-  { value: "bank1", label: "Bank 1" },
-  { value: "bank2", label: "Bank 2" },
-];
-
 export default function CardNewTender() {
   const [formData, setFormData] = useState({
     CompanyReferenceNo: "",
@@ -45,7 +35,6 @@ export default function CardNewTender() {
     TenderSubmissionDate: "",
     TenderFee: "",
     emdType: null,
-    emdValidUpto: "",
     emdAmount: "",
     emdDate: "",
     bank: null,
@@ -60,12 +49,19 @@ export default function CardNewTender() {
   const [tenderSources, setTenderSources] = useState([]);
   const [reminder, setReminder] = useState(null);
   const [newTenderSourceAdded, setNewTenderSourceAdded] = useState(false);
+  const [newEmdTypeAdded, SetNewEmdTypeAdded] = useState(false);
+  const [newBankAdded, setNewBankAdded] = useState(false);
+  const [banks, setBanks] = useState([]);
+  const [emdTypes, setEmdTypes] = useState([]);
 
   const handleInputChange = ({ target: { id, value } }) =>
     setFormData((prev) => ({ ...prev, [id]: value }));
 
   const handleSelectChange = (selectedOption, field) => {
-    if (selectedOption.__isNew__) setNewTenderSourceAdded(true);
+    const newOrNot = selectedOption.__isNew__;
+    if (selectedOption.__isNew__ && field==='TenderSource') setNewTenderSourceAdded(newOrNot);
+    if (selectedOption.__isNew__ && field==='bank') setNewBankAdded(newOrNot);
+    if (selectedOption.__isNew__ && field==='emdType') SetNewEmdTypeAdded(newOrNot);
     setFormData((prev) => ({ ...prev, [field]: selectedOption }));
   };
 
@@ -94,6 +90,12 @@ export default function CardNewTender() {
     fetchData("/tender-source", setTenderSources, (data) =>
       data.map(({ _id, name }) => ({ value: _id, label: name }))
     );
+    fetchData("/banks", setBanks, (data) =>
+      data.map(({ _id, name }) => ({ value: _id, label: name }))
+    );
+    fetchData("/emd-types", setEmdTypes, (data) =>
+      data.map(({ _id, name }) => ({ value: _id, label: name }))
+    );
   }, []);
 
   useEffect(() => {
@@ -107,15 +109,51 @@ export default function CardNewTender() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (newTenderSourceAdded && formData.TenderSource) {
-      try {
-        const newSource = { name: formData.TTenderSource.label };
-        await api.post("/tender-source", newSource);
-      } catch (error) {
-        console.error("Error during API call:", error);
-      }
+    try{
+      if (newTenderSourceAdded) await api.post("/tender-source", { name: formData.TenderSource.label });
+      if (newBankAdded) await api.post("/banks", { name: formData.bank.label });
+      if (newEmdTypeAdded) await api.post("/emd-types", { name: formData.emdType.label });
+    }catch(err){
+      console.log("Adding a new field", err)
     }
-    
+    console.log(formData)
+    let emdresponse = "";
+    try{
+      const emdpayload = {
+        EmdType:formData.emdType.label,
+        EmdAmount: formData.emdAmount,
+        Date: formData.emdDate,
+        Bank: formData.bank.label,
+        ValidityRequired: formData.validityRequired,
+        ScanCopyId:"placeholderScanCopyId"
+      }
+      console.log(emdpayload)
+      emdresponse = await api.post("/emd-details", emdpayload)
+      console.log("EMD created successfully",emdresponse)
+    }catch(error){
+      console.error("Error creating emd details object", error)
+      return;
+    }
+    const emdObjectId = emdresponse.data._id;
+    try{
+      const tenderpayload = {
+        CompanyReferenceNo: formData.CompanyReferenceNo,
+        PublisinghAuthObjectId: formData.PublisinghAuthObjectId.value,
+        TenderNo: formData.TenderNo,
+        TenderPublisingDate: formData.TenderPublisingDate,
+        TenderSubmissionDate: formData.TenderSubmissionDate,
+        TenderFee: formData.TenderFee,
+        EmdDetailsObjectId: emdObjectId,
+        LeadEmail: formData.LeadEmail,
+        LeadPhoneNumber: formData.phoneNumber,
+        TenderSource: formData.TenderSource.value
+      }
+      console.log(tenderpayload)
+      const response = await api.post("/lead",tenderpayload)
+      console.log("Tender created successfully",response)
+    }catch(error){
+      console.error("Error creating new tender", error)
+    }
   };
 
   const renderInput = (id, label, type = "text", placeholder = "") => (
@@ -177,7 +215,7 @@ export default function CardNewTender() {
           <div className="flex flex-wrap">
             {renderInput("CompanyReferenceNo", "Company Reference No.")}
             {renderSelect("PublisinghAuthObjectId", "Publishing Authority", publishingAuthorities)}
-            {renderInput("TenderNo", "Tender No.")}
+            {renderInput("TenderNo", "Tender No. (UNIQUE)")}
             {renderInput("TenderPublisingDate", "Tender Publishing Date", "date")}
             {renderInput("TenderSubmissionDate", "Tender Submission Date", "date")}
             {reminder && <p className="text-sm text-red-500 mt-2">Reminder: {reminder} (5 days before submission)</p>}
@@ -186,11 +224,11 @@ export default function CardNewTender() {
 
           <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">EMD Details</h6>
           <div className="flex flex-wrap">
-            {renderSelect("emdType", "EMD Type", emdTypes)}
+            {renderSelect("emdType", "EMD Type", emdTypes, true)}
             {renderInput("emdAmount", "EMD Amount", "number")}
             {renderInput("emdDate", "EMD Date", "date")}
             {renderInput("validityRequired", "Validity Required (Days)", "number")}
-            {renderSelect("bank", "Bank", banks)}
+            {renderSelect("bank", "Bank", banks, true)}
             <div className="w-full lg:w-6/12 px-4">
               <div className="relative w-full mb-3">
                 <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="scanCopy">

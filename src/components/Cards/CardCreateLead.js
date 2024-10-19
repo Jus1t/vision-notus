@@ -82,7 +82,7 @@ export default function CardNewLead() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Form data:", formData);
-    // Here you would typically send the data to your backend
+    
   };
 
   return (
