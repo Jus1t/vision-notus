@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import api from "views/auth/api";
 
 export default function CardNewPubAuth() {
+  const history = useHistory();
   // State for form fields
   const [formData, setFormData] = useState({
     name: "",
@@ -22,9 +24,14 @@ export default function CardNewPubAuth() {
 
   // Handle form submission
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log("Form data:", formData);
-    const response = await api.post('/publishing-auth',formData)
+    try {
+      e.preventDefault();
+      console.log("Form data:", formData);
+      const response = await api.post('/publishing-auth', formData)
+      history.push('/admin/pubauths')
+    } catch (e) {
+      console.log("shit");
+    }
     // Here you would typically send the data to your backend
   };
 
@@ -52,7 +59,7 @@ export default function CardNewPubAuth() {
             <div className="w-full lg:w-6/12 px-4">
               <div className="relative w-full mb-3">
                 <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor="name">
-                  Name
+                  Designation
                 </label>
                 <input
                   type="text"

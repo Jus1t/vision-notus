@@ -1,37 +1,35 @@
 import React, { useState, useEffect } from "react";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import Select from "react-select";
 import api from "views/auth/api";
 
-// Custom styles for react-select to match Tailwind classes
 const customStyles = {
   control: (provided, state) => ({
     ...provided,
     backgroundColor: "white",
     borderRadius: "0.25rem",
     borderColor: state.isFocused ? "#3b82f6" : "transparent",
-    boxShadow: state.isFocused ? "0 0 0 3px rgba(59, 130, 246, 0.5)" : "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
-    "&:hover": {
-      borderColor: state.isFocused ? "#3b82f6" : "transparent",
-    },
+    boxShadow: state.isFocused
+      ? "0 0 0 3px rgba(59, 130, 246, 0.5)"
+      : "0 1px 3px rgba(0, 0, 0, 0.1)",
+    "&:hover": { borderColor: state.isFocused ? "#3b82f6" : "transparent" },
   }),
   menu: (provided) => ({
     ...provided,
     borderRadius: "0.375rem",
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+    boxShadow:
+      "0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)",
   }),
   option: (provided, state) => ({
     ...provided,
-    backgroundColor: state.isSelected ? "#3b82f6" : state.isFocused ? "#e5e7eb" : null,
+    backgroundColor: state.isSelected
+      ? "#3b82f6"
+      : state.isFocused
+      ? "#e5e7eb"
+      : null,
     color: state.isSelected ? "white" : "#1f2937",
   }),
 };
-
-// Dummy item options
-const dummyItems = [
-  { value: "item1", label: "Item 1" },
-  { value: "item2", label: "Item 2" },
-  { value: "item3", label: "Item 3" },
-];
 
 export default function CardCreateProduct() {
   const [formData, setFormData] = useState({
@@ -41,284 +39,279 @@ export default function CardCreateProduct() {
     selectedItem: null,
     Quantity: "",
   });
-  const [itemList, setItemList] = useState(dummyItems);
+  const [itemList, setItemList] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
+  const history = useHistory();
+  const handleInputChange = ({ target: { id, value } }) =>
+    setFormData((prev) => ({ ...prev, [id]: value }));
 
-  // Handle change for input fields
-  const handleInputChange = (e) => {
-    const { id, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [id]: value,
-    }));
-  };
+  const handleSelectChange = (selectedOption, { id }) =>
+    setFormData((prev) => ({ ...prev, [id]: selectedOption }));
 
-  // Handle change for select fields
-  const handleSelectChange = (selectedOption, { id }) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      [id]: selectedOption,
-    }));
-  };
+  const resetForm = () =>
+    setFormData((prev) => ({ ...prev, selectedItem: null, Quantity: "" }));
 
-  // Handle adding new row to the table
   const handleAddItem = () => {
     const { selectedItem, Quantity } = formData;
     if (!selectedItem || !Quantity) {
-      alert("Please select an item and Quantity.");
+      alert("Please select an item and enter Quantity.");
       return;
     }
-
-    const newRow = {
-      ItemSerialNo: selectedItem.ItemSerialNo,
-      ShortDesc: selectedItem.ShortDesc,
-      LongDesc: selectedItem.LongDesc,
-      Uom: selectedItem.Uom,
-      Quantity: parseFloat(Quantity),
-    };
-    setTableData((prevData) => [...prevData, newRow]);
-    setFormData({ ...formData, selectedItem: null, Quantity: "" });
+    setTableData((prev) => [
+      ...prev,
+      { ItemObjectId: selectedItem._id, Quantity: parseFloat(Quantity) },
+    ]);
+    resetForm();
   };
 
-  // Handle row deletion
   const handleDeleteRow = (index) => {
-    setTableData((prevData) => prevData.filter((_, i) => i !== index));
+    setTableData((prev) => prev.filter((_, i) => i !== index));
+    if (editIndex === index) {
+      setEditIndex(null);
+      resetForm();
+    }
   };
 
-  // Handle row editing
   const handleEditRow = (index) => {
     const rowData = tableData[index];
-    // Find the selected item from itemList by matching with the ShortDesc
-    const selectedItem = itemList.find((item) => item.ShortDesc === rowData.ShortDesc);
-    setFormData({
-      ...formData,
-      selectedItem: selectedItem,
-      Quantity: rowData.Quantity,
-    });
+    const selectedItem = itemList.find((item) => item._id === rowData.ItemObjectId);
+    setFormData({ ...formData, selectedItem, Quantity: rowData.Quantity });
     setEditIndex(index);
   };
 
-  // Save the edited row
   const handleSaveEdit = () => {
-    const updatedRow = {
-      ItemSerialNo: formData.selectedItem.ItemSerialNo,
-      ShortDesc: formData.selectedItem.ShortDesc,
-      LongDesc: formData.selectedItem.LongDesc,
-      Uom: formData.selectedItem.Uom,
-      Quantity: parseFloat(formData.Quantity),
-    };
-    const updatedTableData = [...tableData];
-    updatedTableData[editIndex] = updatedRow;
-    setTableData(updatedTableData);
+    setTableData((prev) =>
+      prev.map((row, i) =>
+        i === editIndex
+          ? {
+              ItemObjectId: formData.selectedItem._id,
+              Quantity: parseFloat(formData.Quantity),
+            }
+          : row
+      )
+    );
     setEditIndex(null);
-    setFormData({ ...formData, selectedItem: null, Quantity: "" }); // Reset form
-  };
-
-  // Cancel the editing process
-  const handleCancelEdit = () => {
-    setEditIndex(null);
-    setFormData({ ...formData, selectedItem: null, Quantity: "" }); // Reset form
+    resetForm();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
     const productData = {
       productName: formData.productName,
       description: formData.description,
       unit: formData.unit,
       itemList: tableData,
     };
-
-    console.log("Product details to submit:", productData);
-
     try {
       const response = await api.post("/product-details", productData);
-      console.log("Response from server:", response);
+      console.log("Product saved:", response);
+      history.push(`/admin/viewproduct/${response.data._id}`)
     } catch (error) {
-      console.error("Error submitting product details:", error);
+      console.error("Error saving product:", error);
     }
   };
 
   useEffect(() => {
-    const fetchItemsAndProducts = async () => {
+    (async () => {
       try {
-        const itemsResponse = await api.get("/item-details");
-        const items = itemsResponse.data.map((i) => ({
-          ...i,
-          value: i._id,
-          label: i.ShortDesc,
-        }));
-        setItemList(items);
+        const { data } = await api.get("/item-details");
+        setItemList(
+          data.map((item) => ({
+            ...item,
+            value: item._id,
+            label: item.ShortDesc,
+          }))
+        );
       } catch (error) {
-        console.error("Error fetching items/products, using dummy data", error);
+        console.error("Error fetching items:", error);
       }
-    };
-    fetchItemsAndProducts();
+    })();
   }, []);
 
+  const renderInput = (id, label, type = "text") => (
+    <div className="w-full lg:w-4/12 px-4">
+      <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">
+        {label}
+      </label>
+      <input
+        type={type}
+        id={id}
+        className="border-0 px-3 py-3 bg-white rounded shadow focus:outline-none focus:ring w-full"
+        value={formData[id]}
+        onChange={handleInputChange}
+      />
+    </div>
+  );
+
+  const renderTableRow = (row, index) => {
+    const item = itemList.find((item) => item._id === row.ItemObjectId);
+    return (
+      <tr key={index}>
+        <td className="border-t-0 px-6 align-middle text-xs p-4">{index + 1}</td>
+        <td className="border-t-0 px-6 align-middle text-xs p-4">
+          {editIndex === index ? (
+            <Select
+              options={itemList}
+              value={formData.selectedItem}
+              onChange={(selectedOption) =>
+                handleSelectChange(selectedOption, { id: "selectedItem" })
+              }
+              styles={customStyles}
+            />
+          ) : (
+            item?.ShortDesc || "Unknown Item"
+          )}
+        </td>
+        <td className="border-t-0 px-6 align-middle text-xs p-4">
+          {editIndex === index ? (
+            <input
+              type="number"
+              id="Quantity"
+              value={formData.Quantity}
+              onChange={handleInputChange}
+              className="border px-2 py-1"
+            />
+          ) : (
+            row.Quantity
+          )}
+        </td>
+        <td className="border-t-0 px-6 align-middle text-xs p-4">
+          {editIndex === index ? (
+            <>
+              <button
+                type="button"
+                className="bg-green-500 text-white font-bold uppercase text-xs px-2 py-1 rounded mr-2"
+                onClick={handleSaveEdit}
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                className="bg-red-500 text-white font-bold uppercase text-xs px-2 py-1 rounded"
+                onClick={() => {
+                  setEditIndex(null);
+                  resetForm();
+                }}
+              >
+                Cancel
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="bg-yellow-500 text-white font-bold uppercase text-xs px-2 py-1 rounded mr-2"
+                onClick={() => handleEditRow(index)}
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                className="bg-red-500 text-white font-bold uppercase text-xs px-2 py-1 rounded"
+                onClick={() => handleDeleteRow(index)}
+              >
+                Delete
+              </button>
+            </>
+          )}
+        </td>
+      </tr>
+    );
+  };
+
   return (
-    <div className="relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded-lg bg-blueGray-100 border-0">
-      <div className="rounded-t bg-white mb-0 px-6 py-6">
-        <div className="text-center flex justify-between">
+    <div className="relative flex flex-col w-full mb-6 shadow-lg rounded-lg bg-blueGray-100">
+      <div className="rounded-t bg-white px-6 py-6">
+        <div className="flex justify-between">
           <h6 className="text-blueGray-700 text-xl font-bold">Create Product</h6>
           <button
-            className="bg-lightBlue-500 text-white active:bg-lightBlue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
-            type="button"
+            className="bg-lightBlue-500 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md"
             onClick={handleSubmit}
           >
             Save
           </button>
         </div>
       </div>
-      <div className="flex-auto px-4 lg:px-10 py-10 pt-0">
+      <div className="flex-auto px-4 lg:px-10 py-10">
         <form>
-          <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">Product Details</h6>
+          <h6 className="text-blueGray-400 text-sm mb-6 font-bold uppercase">
+            Product Details
+          </h6>
           <div className="flex flex-wrap">
-            <div className="w-full lg:w-4/12 px-4">
-              <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">Product Name</label>
-              <input
-                type="text"
-                id="productName"
-                className="border-0 px-3 py-3 bg-white rounded shadow focus:outline-none focus:ring w-full"
-                value={formData.productName}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="w-full lg:w-4/12 px-4">
-              <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">Description</label>
-              <input
-                type="text"
-                id="description"
-                className="border-0 px-3 py-3 bg-white rounded shadow focus:outline-none focus:ring w-full"
-                value={formData.description}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="w-full lg:w-4/12 px-4">
-              <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">Unit</label>
-              <input
-                type="text"
-                id="unit"
-                className="border-0 px-3 py-3 bg-white rounded shadow focus:outline-none focus:ring w-full"
-                value={formData.unit}
-                onChange={handleInputChange}
-              />
-            </div>
+            {renderInput("productName", "Product Name")}
+            {renderInput("description", "Description")}
+            {renderInput("unit", "Unit")}
           </div>
-
-          <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">Add Items</h6>
+          <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">
+            Add Items
+          </h6>
           <div className="flex flex-wrap">
             <div className="w-full lg:w-4/12 px-4">
-              <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">Item</label>
+              <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">
+                Item
+              </label>
               <Select
                 options={itemList}
                 styles={customStyles}
                 placeholder="Select Item"
                 value={formData.selectedItem}
-                onChange={(selectedOption) => handleSelectChange(selectedOption, { id: "selectedItem" })}
+                onChange={(selectedOption) =>
+                  handleSelectChange(selectedOption, { id: "selectedItem" })
+                }
               />
             </div>
-            <div className="w-full lg:w-4/12 px-4">
-              <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">Quantity</label>
-              <input
-                type="number"
-                id="Quantity"
-                className="border-0 px-3 py-3 bg-white rounded shadow focus:outline-none focus:ring w-full"
-                value={formData.Quantity}
-                onChange={handleInputChange}
-              />
-            </div>
+            {renderInput("Quantity", "Quantity", "number")}
           </div>
-
-          <button
-            type="button"
-            className="bg-lightBlue-500 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md mt-3"
-            onClick={handleAddItem}
-          >
-            Add Item
-          </button>
-
+          <div className="mt-3">
+            {editIndex !== null ? (
+              <>
+                <button
+                  type="button"
+                  className="bg-green-500 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md mr-2"
+                  onClick={handleSaveEdit}
+                >
+                  Save Edit
+                </button>
+                <button
+                  type="button"
+                  className="bg-red-500 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md"
+                  onClick={() => {
+                    setEditIndex(null);
+                    resetForm();
+                  }}
+                >
+                  Cancel Edit
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                className="bg-lightBlue-500 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md"
+                onClick={handleAddItem}
+              >
+                Add Item
+              </button>
+            )}
+          </div>
           <div className="block w-full overflow-x-auto mt-6">
-            <h6 className="text-blueGray-400 text-sm font-bold uppercase">Item List</h6>
-            <table className="items-center w-full bg-transparent border-collapse table-auto">
+            <h6 className="text-blueGray-400 text-sm font-bold uppercase">
+              Item List
+            </h6>
+            <table className="items-center w-full bg-transparent border-collapse">
               <thead>
                 <tr>
-                  <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left">#</th>
-                  <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left">Item</th>
-                  <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left">Quantity</th>
-                  <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left">Actions</th>
+                  {["#", "Item", "Quantity", "Actions"].map((header) => (
+                    <th
+                      key={header}
+                      className="px-6 align-middle border border-solid py-3 text-xs uppercase font-semibold text-left"
+                    >
+                      {header}
+                    </th>
+                  ))}
                 </tr>
               </thead>
-              <tbody>
-                {tableData.map((row, index) => (
-                  <tr key={index}>
-                    <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{index + 1}</td>
-                    <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                      {editIndex === index ? (
-                        <Select
-                          options={itemList}
-                          value={formData.selectedItem}
-                          onChange={(selectedOption) => handleSelectChange(selectedOption, { id: "selectedItem" })}
-                        />
-                      ) : (
-                        row.ShortDesc
-                      )}
-                    </td>
-                    <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                      {editIndex === index ? (
-                        <input
-                          type="number"
-                          id="Quantity"
-                          value={formData.Quantity}
-                          onChange={handleInputChange}
-                          className="border px-2 py-1"
-                        />
-                      ) : (
-                        row.Quantity
-                      )}
-                    </td>
-                    <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                      {editIndex === index ? (
-                        <>
-                          <button
-                            type="button"
-                            className="bg-yellow-500 text-white font-bold uppercase text-xs px-2 py-1 rounded mr-2"
-                            onClick={handleSaveEdit}
-                          >
-                            Save
-                          </button>
-                          <button
-                            type="button"
-                            className="bg-red-500 text-white font-bold uppercase text-xs px-2 py-1 rounded mr-2"
-                            onClick={handleCancelEdit}
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            type="button"
-                            className="bg-yellow-500 text-white font-bold uppercase text-xs px-2 py-1 rounded mr-2"
-                            onClick={() => handleEditRow(index)}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            className="bg-red-500 text-white font-bold uppercase text-xs px-2 py-1 rounded"
-                            onClick={() => handleDeleteRow(index)}
-                          >
-                            Delete
-                          </button>
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+              <tbody>{tableData.map(renderTableRow)}</tbody>
             </table>
           </div>
         </form>

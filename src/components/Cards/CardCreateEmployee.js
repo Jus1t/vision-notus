@@ -67,10 +67,7 @@ export default function NewEmployeeForm() {
     }
   };
   
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const validateForm = () => {
     const requiredFields = [
       "FirstName", "LastName", "ContactDetails", "email", "password", "role",
       "FathersName", "FathersContactDetails", "DateOfBirth", "PresentAddress", "PermanentAddress",
@@ -81,12 +78,41 @@ export default function NewEmployeeForm() {
     const missingFields = requiredFields.filter(field => !formData[field]);
     if (missingFields.length > 0) {
       alert(`Please fill in the following required fields: ${missingFields.join(", ")}`);
-      return; // Stop form submission if any fields are missing
+      return false;
     }
 
-    if(!passwordMatch){
+    if (!passwordMatch) {
       alert("Passwords do not match!");
-      return;
+      return false;
+    }
+
+    if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      alert("Please enter a valid email address.");
+      return false;
+    }
+
+    if (formData.ContactDetails && !/^\d{10}$/.test(formData.ContactDetails)) {
+      alert("Please enter a valid 10-digit phone number.");
+      return false;
+    }
+
+    if (formData.FathersContactDetails && !/^\d{10}$/.test(formData.FathersContactDetails)) {
+      alert("Please enter a valid 10-digit phone number for Father's Contact Details.");
+      return false;
+    }
+
+    if (formData.SpouseContactDetails && formData.SpouseContactDetails !== "" && !/^\d{10}$/.test(formData.SpouseContactDetails)) {
+      alert("Please enter a valid 10-digit phone number for Spouse's Contact Details.");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) {
+      return; // Stop form submission if validation fails
     }
 
     const employeeDetails = {
@@ -144,7 +170,7 @@ export default function NewEmployeeForm() {
       const credentialsResponse = await api.post('/credentials', credentials);
 
       console.log('User created successfully', userResponse.data);
-      history.push('/');
+      history.push(`/admin/employee/${employeeId}`);
 
     } catch (error) {
       console.error('Error:', error.response ? error.response.data : error.message);

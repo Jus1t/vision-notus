@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
+import CreatableSelect from "react-select/creatable";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import api from "views/auth/api";
 
-// Custom styles for react-select to match Tailwind classes
 const customStyles = {
   control: (provided, state) => ({
     ...provided,
@@ -26,14 +27,12 @@ const customStyles = {
   }),
 };
 
-// Dummy options for publishing authorities if API call fails
 const dummyAuthorities = [
   { value: "authority1", label: "Authority 1" },
   { value: "authority2", label: "Authority 2" },
   { value: "authority3", label: "Authority 3" },
 ];
 
-// Dummy product/item options
 const dummyItems = [
   { value: "item1", label: "Item 1" },
   { value: "item2", label: "Item 2" },
@@ -44,7 +43,7 @@ const dummyItems = [
 export default function CardCreateBOQ({ color = "light" }) {
   const [formData, setFormData] = useState({
     pubauthid: null,
-    tenderNo: "",
+    tenderNo: null,
     boqSerialNo: "",
     selectionName: null,
     quantity: "",
@@ -58,10 +57,11 @@ export default function CardCreateBOQ({ color = "light" }) {
   const [productList, setProductList] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [totalSorAmount, setTotalSorAmount] = useState(0);
-  const [editIndex, setEditIndex] = useState(null); // Track the index of the row being edited
+  const [editIndex, setEditIndex] = useState(null);
+  const [tenderOptions, setTenderOptions] = useState([]);
+  const history = useHistory();
 
-  const columnbaseclass =
-    "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left ";
+  const columnbaseclass = "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left ";
   const lightClass = "bg-blueGray-50 text-blueGray-500 border-blueGray-100";
   const darkClass = "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700";
   const columnselectedclass = color === "light" ? lightClass : darkClass;
@@ -72,11 +72,10 @@ export default function CardCreateBOQ({ color = "light" }) {
     setOptions(mergedOptions);
   }, [itemList, productList]);
 
-  // Fetch publishing authorities from API (fallback to dummy if API call fails)
   useEffect(() => {
     const fetchAuthorities = async () => {
       try {
-        const response = await api.get("/publishing-auth"); // Example API endpoint
+        const response = await api.get("/publishing-auth");
         const namesId = response.data.map(pubauth => ({
           value: pubauth._id,
           label: pubauth.name
@@ -90,7 +89,6 @@ export default function CardCreateBOQ({ color = "light" }) {
     fetchAuthorities();
   }, []);
 
-  // Fetch items/products from API (dummy data for now)
   useEffect(() => {
     const fetchItemsAndProducts = async () => {
       try {
@@ -99,17 +97,16 @@ export default function CardCreateBOQ({ color = "light" }) {
           value: i._id,
           label: i.ShortDesc
         }));
-        setItemList(itemNamesId)
+        setItemList(itemNamesId);
         setItems(itemsResponse.data);
 
         const productResponse = await api.get("/product-details");
-        console.log(productResponse.data)
         const productNamesId = productResponse.data.map(i => ({
           value: i._id,
           label: i.productName
-        }))
-        setProductList(productNamesId)
-        setProducts(productResponse.data)
+        }));
+        setProductList(productNamesId);
+        setProducts(productResponse.data);
       } catch (error) {
         console.error("Error fetching items/products, using dummy data", error);
       }
@@ -117,7 +114,20 @@ export default function CardCreateBOQ({ color = "light" }) {
     fetchItemsAndProducts();
   }, []);
 
-  // Handle change for input fields
+  const fetchTenders = async (pubauthid) => {
+    try {
+      const response = await api.get(`/lead/getbypublishingauthid/${pubauthid}`);
+      const tenderData = response.data.map((tender) => ({
+        value: tender._id,
+        label: `${tender.TenderNo} - ${tender.TenderName}`,
+      }));
+      setTenderOptions(tenderData);
+    } catch (error) {
+      console.error("Error fetching tenders", error);
+      setTenderOptions([]);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { id, value } = e.target;
     setFormData((prevData) => ({
@@ -126,20 +136,10 @@ export default function CardCreateBOQ({ color = "light" }) {
     }));
   };
 
-  const findAuthIdbyName = (label) => {
-    const foundAuth = authorities.find(i => i.name === label);
-    return foundAuth ? foundAuth : null; // Returns null if not found
-  };
-  const findItembyName = (label) => {
-    const foundItem = items.find(i => i.ShortDesc === label);
-    return foundItem ? foundItem : null; // Returns null if not found
-  };
-  const findProductbyName = (label) => {
-    const fountProduct = products.find(i => i.productName === label);
-    return fountProduct ? fountProduct : null
-  }
-  // Handle change for select fields
-  const handleSelectChange = (selectedOption, { id }) => {
+  const handleSelectChange = (selectedOption, id) => {
+    if (id === "pubauthid") {
+      fetchTenders(selectedOption.value);
+    }
     setFormData((prevData) => ({
       ...prevData,
       [id]: selectedOption,
@@ -147,46 +147,37 @@ export default function CardCreateBOQ({ color = "light" }) {
   };
 
   const processSelection = (selectionName, quantity, sorRate, processedItems, processedProducts) => {
-    console.log(selectionName);
-    let selectedIsProduct = true; // Use `let` because you are modifying it
-
-    let selection = findItembyName(selectionName.label);
-    console.log(selection);
+    let selectedIsProduct = true;
+    let selection = items.find(i => i.ShortDesc === selectionName.label);
 
     if (selection) {
       selectedIsProduct = false;
     } else {
-      selection = findProductbyName(selectionName.label);
+      selection = products.find(i => i.productName === selectionName.label);
     }
 
     if (!selection) {
       console.log("Selection is neither a product nor an item.");
-      return; // Stop further processing if no selection found
+      return;
     }
 
     if (!selectedIsProduct) {
-      // Selection is an item
-      const payload = {
-        Item: selection,
+      processedItems.push({
+        ItemObjectId: selection._id,
         ReqQty: quantity,
         SorRate: sorRate,
         SorAmount: sorRate * quantity,
-      }
-      console.log("HERE ITEM IS", payload);
-      processedItems.push(payload); // Add to local array
+      });
     } else {
-      // Selection is a product
-      const newProduct = {
-        Product: selection,
+      processedProducts.push({
+        Product: selection._id,
         ReqQty: quantity,
         SorRate: sorRate,
         SorAmount: sorRate * quantity
-      };
-      processedProducts.push(newProduct); // Add to local array
+      });
     }
   };
 
-  // Handle adding new row to the table
   const handleAdd = () => {
     const { selectionName, quantity, sorRate } = formData;
     if (!selectionName || !quantity || !sorRate) {
@@ -204,18 +195,15 @@ export default function CardCreateBOQ({ color = "light" }) {
     setFormData({ ...formData, selectionName: null, quantity: "", sorRate: "" });
   };
 
-  // Calculate total SOR Amount
   useEffect(() => {
     const total = tableData.reduce((acc, row) => acc + row.sorAmount, 0);
     setTotalSorAmount(total.toFixed(2));
   }, [tableData]);
 
-  // Handle row deletion
   const handleDeleteRow = (index) => {
     setTableData((prevData) => prevData.filter((_, i) => i !== index));
   };
 
-  // Handle row editing
   const handleEditRow = (index) => {
     const rowData = tableData[index];
     setFormData({
@@ -223,12 +211,11 @@ export default function CardCreateBOQ({ color = "light" }) {
       quantity: rowData.quantity,
       sorRate: rowData.sorRate,
     });
-    setEditIndex(index); // Set the current row index to edit mode
+    setEditIndex(index);
   };
 
-  // Save the edited row
   const handleSaveEdit = (e) => {
-    e.preventDefault()
+    e.preventDefault();
     const updatedRow = {
       selectionName: formData.selectionName,
       quantity: parseFloat(formData.quantity),
@@ -238,13 +225,12 @@ export default function CardCreateBOQ({ color = "light" }) {
     const updatedTableData = [...tableData];
     updatedTableData[editIndex] = updatedRow;
     setTableData(updatedTableData);
-    setEditIndex(null); // Exit edit mode
+    setEditIndex(null);
   };
 
-  // Cancel the editing process
   const handleCancelEdit = (e) => {
-    e.preventDefault()
-    setEditIndex(null); // Exit edit mode without saving changes
+    e.preventDefault();
+    setEditIndex(null);
   };
 
   const handleSubmit = async (e) => {
@@ -253,33 +239,52 @@ export default function CardCreateBOQ({ color = "light" }) {
     const processedItems = [];
     const processedProducts = [];
 
-    setTimeout(async () => {
-      tableData.forEach((row) => {
-        const { selectionName, quantity, sorRate } = row;
-        processSelection(selectionName, quantity, sorRate, processedItems, processedProducts);
-      });
-    }, 100);
+    tableData.forEach((row) => {
+      const { selectionName, quantity, sorRate } = row;
+      processSelection(selectionName, quantity, sorRate, processedItems, processedProducts);
+    });
 
-    setTimeout(async () => {
-      const boqdetails = {
-        PublishingAuthId: formData.pubauthid.value,
-        TenderNo: formData.tenderNo,
-        BoqSerialNo: formData.boqSerialNo,
-        ItemList: processedItems,
-        ProductList: processedProducts,
-      };
+    const boqdetails = {
+      PublishingAuthId: formData.pubauthid.value,
+      TenderNo: formData.tenderNo.value,
+      BoqSerialNo: formData.boqSerialNo,
+      ItemList: processedItems,
+      ProductList: processedProducts,
+    };
 
-      console.log("Boq details to submit:", boqdetails);
-
-      // Now submit the processed data
-      try {
-        const response = await api.post('/boq-details', boqdetails);
-        console.log("Response from server:", response);
-      } catch (error) {
-        console.error("Error submitting BOQ details:", error);
-      }
-    }, 100); // Add a small delay to ensure state is updated before submitting
+    console.log(boqdetails);
+    try {
+      const response = await api.post('/boq-details', boqdetails);
+      console.log("Response from server:", response);
+      const boqid = response.data._id;
+      history.push(`/viewboq/${boqid}`);
+    } catch (error) {
+      console.error("Error submitting BOQ details:", error);
+    }
   };
+
+  const renderSelect = (id, label, options, isCreatable = false) => {
+    const SelectComponent = isCreatable ? CreatableSelect : Select;
+    return (
+      <div className="w-full lg:w-6/12 px-4">
+        <div className="relative w-full mb-3">
+          <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2" htmlFor={id}>
+            {label}
+          </label>
+          <SelectComponent
+            options={options}
+            styles={customStyles}
+            placeholder={`Select ${label}`}
+            id={id}
+            value={formData[id]}
+            onChange={(selectedOption) => handleSelectChange(selectedOption, id)}
+            isSearchable
+          />
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded-lg bg-blueGray-100 border-0">
       <div className="rounded-t bg-white mb-0 px-6 py-6">
@@ -298,14 +303,8 @@ export default function CardCreateBOQ({ color = "light" }) {
         <form>
           <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">BOQ Details</h6>
           <div className="flex flex-wrap">
-            <div className="w-full lg:w-4/12 px-4">
-              <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">Publishing Authority</label>
-              <Select options={authorities} styles={customStyles} placeholder="Select Authority" value={formData.pubauthid} onChange={(selectedOption) => handleSelectChange(selectedOption, { id: "pubauthid" })} />
-            </div>
-            <div className="w-full lg:w-4/12 px-4">
-              <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">Tender No</label>
-              <input type="text" id="tenderNo" className="border-0 px-3 py-3 bg-white rounded shadow focus:outline-none focus:ring w-full" value={formData.tenderNo} onChange={handleInputChange} />
-            </div>
+            {renderSelect("pubauthid", "Publishing Authority", authorities)}
+            {renderSelect("tenderNo", "Tender", tenderOptions)}
             <div className="w-full lg:w-4/12 px-4">
               <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">BOQ Serial No</label>
               <input type="text" id="boqSerialNo" className="border-0 px-3 py-3 bg-white rounded shadow focus:outline-none focus:ring w-full" value={formData.boqSerialNo} onChange={handleInputChange} />
@@ -316,7 +315,13 @@ export default function CardCreateBOQ({ color = "light" }) {
           <div className="flex flex-wrap">
             <div className="w-full lg:w-4/12 px-4">
               <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">Product/Item Name</label>
-              <Select options={options} styles={customStyles} placeholder="Select Item" value={formData.selectionName} onChange={(selectedOption) => handleSelectChange(selectedOption, { id: "selectionName" })} />
+              <Select
+                options={options}
+                styles={customStyles}
+                placeholder="Select Item"
+                value={formData.selectionName}
+                onChange={(selectedOption) => handleSelectChange(selectedOption, "selectionName")}
+              />
             </div>
             <div className="w-full lg:w-4/12 px-4">
               <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">Quantity</label>
@@ -351,7 +356,7 @@ export default function CardCreateBOQ({ color = "light" }) {
                     <td className={tdClass}>{index + 1}</td>
                     <td className={tdClass}>
                       {editIndex === index ? (
-                        <Select options={itemList} value={formData.selectionName} onChange={(selectedOption) => handleSelectChange(selectedOption, { id: "selectionName" })} />
+                        <Select options={itemList} value={formData.selectionName} onChange={(selectedOption) => handleSelectChange(selectedOption, "selectionName")} />
                       ) : (
                         row.selectionName.label
                       )}

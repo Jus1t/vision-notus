@@ -80,8 +80,12 @@ export default function CardNewLead() {
 
   // Handle form submission
   const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Form data:", formData);
+    try{
+      e.preventDefault();
+      console.log("Form data:", formData);
+    }catch(e){
+
+    }
     
   };
 

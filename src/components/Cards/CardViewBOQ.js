@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import api from 'views/auth/api';
 
 const CardViewBOQ = ({ color = 'light' }) => {
@@ -7,6 +7,9 @@ const CardViewBOQ = ({ color = 'light' }) => {
   const [boqData, setBoqData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [publishingAuthority, setPublishingAuthority] = useState(null);
+  const [tenderName, setTenderName] = useState(null);
+  const [itemDetails, setItemDetails] = useState([]);
+  const [productDetails, setProductDetails] = useState([]);
 
   useEffect(() => {
     const fetchBOQ = async () => {
@@ -14,18 +17,39 @@ const CardViewBOQ = ({ color = 'light' }) => {
         // Fetch the BOQ details using the BOQ ID from the URL
         const response = await api.get(`/boq-details/${id}`);
         const boqDetails = response.data;
-        console.log(response.data)
         setBoqData(boqDetails);
+
         // Fetch the publishing authority name using the PublishingAuthId from the BOQ details
         const pubAuthResponse = await api.get(`/publishing-auth/${boqDetails.PublishingAuthId}`);
         setPublishingAuthority(pubAuthResponse.data.name);
 
+        // Fetch the TenderName using the TenderNo from the BOQ details
+        const tenderResponse = await api.get(`/lead/${boqDetails.TenderNo}`);
+        setTenderName(tenderResponse.data.TenderName);
+
+        // Fetch item details for each item in the ItemList
+        const itemDetailsPromises = boqDetails.ItemList.map(item =>
+          api.get(`/item-details/${item.ItemObjectId}`)
+        );
+        const itemDetailsResponses = await Promise.all(itemDetailsPromises);
+        const itemDetailsData = itemDetailsResponses.map(res => res.data);
+        setItemDetails(itemDetailsData);
+        console.log(boqDetails)
+        // Fetch product details for each product in the ProductList
+        const productDetailsPromises = boqDetails.ProductList.map(product =>
+          api.get(`/product-details/${product.Product}`)
+        );
+        const productDetailsResponses = await Promise.all(productDetailsPromises);
+        const productDetailsData = productDetailsResponses.map(res => res.data);
+        setProductDetails(productDetailsData);
+
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching BOQ data:', error);
+        console.error('Error fetching BOQ data or item/product details:', error);
         setLoading(false);
       }
     };
+
     fetchBOQ();
   }, [id]);
 
@@ -81,9 +105,9 @@ const CardViewBOQ = ({ color = 'light' }) => {
             </div>
             <div className="w-full lg:w-4/12 px-4">
               <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">
-                Tender No
+                Tender Name
               </label>
-              <p className="text-blueGray-700 text-sm">{boqData.TenderNo}</p>
+              <p className="text-blueGray-700 text-sm">{tenderName}</p>
             </div>
           </div>
         </div>
@@ -101,26 +125,38 @@ const CardViewBOQ = ({ color = 'light' }) => {
               </tr>
             </thead>
             <tbody>
-              {boqData.ItemList &&
-                boqData.ItemList.map((i, index) => (
-                  <tr key={index}>
-                    <td className={tdClass}>{index + 1}</td>
-                    <td className={tdClass}>{i.Item.ShortDesc}</td>
-                    <td className={tdClass}>{i.ReqQty}</td>
-                    <td className={tdClass}>{i.SorRate}</td>
-                    <td className={tdClass}>{i.SorAmount.toFixed(2)}</td>
-                  </tr>
-                ))}
-              {boqData.ProductList &&
-                boqData.ProductList.map((product, index) => (
-                  <tr key={`product-${index}`}>
-                    <td className={tdClass}>{boqData.ItemList.length + index + 1}</td>
-                    <td className={tdClass}>{product.Product.productName}</td>
-                    <td className={tdClass}>{product.ReqQty}</td>
-                    <td className={tdClass}>{product.SorRate}</td>
-                    <td className={tdClass}>{product.SorAmount.toFixed(2)}</td>
-                  </tr>
-                ))}
+              {itemDetails.map((item, index) => (
+                <tr key={index}>
+                  <td className={tdClass}>{index + 1}</td>
+                  <td className={tdClass}>{item.ShortDesc}</td>
+                  <td className={tdClass}>{boqData.ItemList[index].ReqQty}</td>
+                  <td className={tdClass}>{boqData.ItemList[index].SorRate}</td>
+                  <td className={tdClass}>{boqData.ItemList[index].SorAmount.toFixed(2)}</td>
+                </tr>
+              ))}
+              {productDetails.map((product, index) => (
+                <tr key={`product-${index}`}>
+                  <td className={tdClass}>{itemDetails.length + index + 1}</td>
+                  <td className={tdClass}>
+                    <Link
+                      to={`/admin/viewproduct/${product._id}`}
+                      style={{
+                        color: '#2563eb',
+                        cursor: 'pointer'
+                      }}
+                      onMouseEnter={(e) => e.target.style.color = '#1e40af'}
+                      onMouseLeave={(e) => e.target.style.color = '#2563eb'}
+                      target="_blank"
+                    >
+                      {product.productName}
+                    </Link>
+
+                  </td>
+                  <td className={tdClass}>{boqData.ProductList[index].ReqQty}</td>
+                  <td className={tdClass}>{boqData.ProductList[index].SorRate}</td>
+                  <td className={tdClass}>{boqData.ProductList[index].SorAmount.toFixed(2)}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

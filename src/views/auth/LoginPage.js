@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import axios from 'axios';
-
+import api from "./api";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 
 export default function LoginPage() {
@@ -19,7 +19,7 @@ export default function LoginPage() {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      const response = await axios.post('http://localhost:3000/api/login/', { Email:email, Password:password });
+      const response = await api.post('/login/', { Email:email, Password:password });
       const { accessToken } = response.data;
       localStorage.setItem('token', accessToken);
       if(accessToken !== null)setIsAuthenticated(true);

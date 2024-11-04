@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import api from "views/auth/api";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 
 export default function CardNewItem() {
+
+  const history = useHistory(); 
+
   // State for form fields
   const [formData, setFormData] = useState({
     ItemSerialNo: "",
@@ -23,10 +27,14 @@ export default function CardNewItem() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Form data:", formData);
-    const response = await api.post('/item-details', formData)
-    console.log(response)
-    // Here you would typically send the data to your backend
+    try {
+      const response = await api.post('/item-details', formData);
+      history.push('/admin/viewitems')
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
   };
+  
 
   return (
     <div className="relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded-lg bg-blueGray-100 border-0">

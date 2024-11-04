@@ -4,6 +4,8 @@ import api from "views/auth/api";
 
 export default function CardViewBOQs({ color = "light" }) {
   const [boqData, setBoqData] = useState([]);
+  const [publishingAuthMap, setPublishingAuthMap] = useState({});
+  const [tenderMap, setTenderMap] = useState({});
   const history = useHistory(); // Hook for navigation
   const [currentPage, setCurrentPage] = useState(1);
   const boqsPerPage = 10;
@@ -12,11 +14,10 @@ export default function CardViewBOQs({ color = "light" }) {
   useEffect(() => {
     const fetchBOQs = async () => {
       try {
-        const response = await api.get("/boq-details"); // Example API endpoint for BOQ data
+        const response = await api.get("/boq-details"); // Fetch BOQ data
         setBoqData(response.data);
       } catch (error) {
         console.error("Error fetching BOQ data, using dummy data", error);
-        // Dummy data with consistent property names
         setBoqData([
           { _id: "1", BoqSerialNo: "BOQ001", PublishingAuthId: "Authority 1", TenderNo: "TENDER001" },
           { _id: "2", BoqSerialNo: "BOQ002", PublishingAuthId: "Authority 2", TenderNo: "TENDER002" },
@@ -24,7 +25,36 @@ export default function CardViewBOQs({ color = "light" }) {
         ]);
       }
     };
+
+    const fetchPublishingAuths = async () => {
+      try {
+        const response = await api.get("/publishing-auth"); // Fetch all publishing authorities
+        const authMap = response.data.reduce((map, auth) => {
+          map[auth._id] = auth.name;
+          return map;
+        }, {});
+        setPublishingAuthMap(authMap);
+      } catch (error) {
+        console.error("Error fetching publishing authorities:", error);
+      }
+    };
+
+    const fetchTenders = async () => {
+      try {
+        const response = await api.get("/lead"); // Fetch all tenders
+        const tenderMap = response.data.reduce((map, tender) => {
+          map[tender._id] = tender.TenderName;
+          return map;
+        }, {});
+        setTenderMap(tenderMap);
+      } catch (error) {
+        console.error("Error fetching tenders:", error);
+      }
+    };
+
     fetchBOQs();
+    fetchPublishingAuths();
+    fetchTenders();
   }, []);
 
   const handleViewBOQ = (boqid) => {
@@ -79,7 +109,7 @@ export default function CardViewBOQs({ color = "light" }) {
             <tr>
               <th className={columnBaseClass + columnSelectedClass}>BOQ Serial No</th>
               <th className={columnBaseClass + columnSelectedClass}>Publishing Authority</th>
-              <th className={columnBaseClass + columnSelectedClass}>Tender No</th>
+              <th className={columnBaseClass + columnSelectedClass}>Tender Name</th>
               <th className={columnBaseClass + columnSelectedClass}>Actions</th>
             </tr>
           </thead>
@@ -87,8 +117,8 @@ export default function CardViewBOQs({ color = "light" }) {
             {currentBOQs.map((boq, index) => (
               <tr key={index}>
                 <td className={tdClass}>{boq.BoqSerialNo}</td>
-                <td className={tdClass}>{boq.PublishingAuthId}</td>
-                <td className={tdClass}>{boq.TenderNo}</td>
+                <td className={tdClass}>{publishingAuthMap[boq.PublishingAuthId] || "N/A"}</td>
+                <td className={tdClass}>{tenderMap[boq.TenderNo] || "N/A"}</td>
                 <td className={tdClass}>
                   <button
                     className="bg-lightBlue-500 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md mr-2"

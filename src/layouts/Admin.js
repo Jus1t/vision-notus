@@ -26,6 +26,7 @@ import ProtectedRoute from "components/Routing/ProtectedRoute";
 import ViewProducts from "views/admin/ViewProducts"
 import CreateProduct from "views/admin/CreateProduct"
 import ViewProductDetails from "views/admin/ViewProductDetails";
+import ViewTenderDetails from "views/admin/ViewTenderDetails";
 
 export default function Admin() {
   const showHeaderStats = false;
@@ -51,6 +52,7 @@ export default function Admin() {
             <ProtectedRoute path="/admin/pubauths" exact component={PubAuths} />
             <ProtectedRoute path="/admin/addboq" exact component={CreateBOQ} />
             <ProtectedRoute path="/admin/tenders" exact component={ViewTenders} />
+            <ProtectedRoute path="/admin/tender/:id" exact component={ViewTenderDetails} />
             <ProtectedRoute path="/admin/viewitems" exact component={ViewItems} />
             <ProtectedRoute path="/admin/viewboqs" exact component={ViewBOQs} />
             <ProtectedRoute path="/admin/viewboq/:id" exact component={ViewBOQ} />

@@ -8,12 +8,13 @@ const CardTenders = ({ color = "light" }) => {
   const [currentPage, setCurrentPage] = useState(1); // Pagination state
   const tendersPerPage = 10; // Number of tenders per page
   const history = useHistory();
-
+  
   useEffect(() => {
     const fetchTenders = async () => {
       try {
         const response = await api.get('/lead'); // Fetch tenders data from your API
         setTenders(response.data);
+        console.log(response.data);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching tenders:', error);
@@ -26,6 +27,18 @@ const CardTenders = ({ color = "light" }) => {
 
   const handleShowDetails = (tenderId) => {
     history.push(`/admin/tender/${tenderId}`);
+  };
+
+  const handleDeleteTender = async (tenderId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this tender?");
+    if (confirmDelete) {
+      try {
+        await api.delete(`/lead/${tenderId}`); // API call to delete tender
+        setTenders((prevTenders) => prevTenders.filter(tender => tender._id !== tenderId));
+      } catch (error) {
+        console.error("Error deleting tender:", error);
+      }
+    }
   };
 
   const handlePageChange = (pageNumber) => {
@@ -69,55 +82,20 @@ const CardTenders = ({ color = "light" }) => {
         <table className="items-center w-full bg-transparent border-collapse">
           <thead>
             <tr>
-              <th
-                className={
-                  "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                  (color === "light"
-                    ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
-                    : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
-                }
-              >
+              <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left bg-blueGray-50 text-blueGray-500 border-blueGray-100">
                 Tender No.
               </th>
-              <th
-                className={
-                  "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                  (color === "light"
-                    ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
-                    : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
-                }
-              >
+              <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left bg-blueGray-50 text-blueGray-500 border-blueGray-100">
                 Company Reference No.
               </th>
-              <th
-                className={
-                  "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                  (color === "light"
-                    ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
-                    : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
-                }
-              >
+              <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left bg-blueGray-50 text-blueGray-500 border-blueGray-100">
                 Contact Details
               </th>
-              <th
-                className={
-                  "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                  (color === "light"
-                    ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
-                    : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
-                }
-              >
-                Source
+              <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left bg-blueGray-50 text-blueGray-500 border-blueGray-100">
+                Email
               </th>
-              <th
-                className={
-                  "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                  (color === "light"
-                    ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
-                    : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
-                }
-              >
-                Action
+              <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left bg-blueGray-50 text-blueGray-500 border-blueGray-100">
+                Actions
               </th>
             </tr>
           </thead>
@@ -125,23 +103,29 @@ const CardTenders = ({ color = "light" }) => {
             {currentTenders.map((tender) => (
               <tr key={tender._id}>
                 <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                  {tender.tenderNo}
+                  {tender.TenderNo}
                 </td>
                 <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                  {tender.companyReferenceNo}
+                  {tender.CompanyReferenceNo}
                 </td>
                 <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                  {tender.contactDetails}
+                  {tender.LeadPhoneNumber}
                 </td>
                 <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                  {tender.source}
+                  {tender.LeadEmail}
                 </td>
                 <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
                   <button
                     onClick={() => handleShowDetails(tender._id)}
-                    className="bg-lightBlue-500 text-white active:bg-lightBlue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                    className="bg-lightBlue-500 text-white active:bg-lightBlue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-2 ease-linear transition-all duration-150"
                   >
                     Details
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTender(tender._id)}
+                    className="bg-red-500 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none ease-linear transition-all duration-150"
+                  >
+                    Delete
                   </button>
                 </td>
               </tr>
@@ -182,3 +166,4 @@ const CardTenders = ({ color = "light" }) => {
 };
 
 export default CardTenders;
+  

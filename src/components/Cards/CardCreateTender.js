@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
 import api from "views/auth/api";
@@ -31,6 +32,8 @@ export default function CardNewTender() {
     CompanyReferenceNo: "",
     PublisinghAuthObjectId: null,
     TenderNo: "",
+    TenderName: "",
+    TenderDescription: "",
     TenderPublisingDate: "",
     TenderSubmissionDate: "",
     TenderFee: "",
@@ -53,16 +56,33 @@ export default function CardNewTender() {
   const [newBankAdded, setNewBankAdded] = useState(false);
   const [banks, setBanks] = useState([]);
   const [emdTypes, setEmdTypes] = useState([]);
-
+  const history = useHistory();
   const handleInputChange = ({ target: { id, value } }) =>
     setFormData((prev) => ({ ...prev, [id]: value }));
 
-  const handleSelectChange = (selectedOption, field) => {
+  // Update the publishing authority and fetch its details
+  const handleSelectChange = async (selectedOption, field) => {
     const newOrNot = selectedOption.__isNew__;
-    if (selectedOption.__isNew__ && field==='TenderSource') setNewTenderSourceAdded(newOrNot);
-    if (selectedOption.__isNew__ && field==='bank') setNewBankAdded(newOrNot);
-    if (selectedOption.__isNew__ && field==='emdType') SetNewEmdTypeAdded(newOrNot);
+    if (selectedOption.__isNew__ && field === 'TenderSource') setNewTenderSourceAdded(newOrNot);
+    if (selectedOption.__isNew__ && field === 'bank') setNewBankAdded(newOrNot);
+    if (selectedOption.__isNew__ && field === 'emdType') SetNewEmdTypeAdded(newOrNot);
+    
     setFormData((prev) => ({ ...prev, [field]: selectedOption }));
+
+    // Fetch the details of the selected publishing authority
+    if (field === "PublisinghAuthObjectId" && selectedOption) {
+      try {
+        const response = await api.get(`/publishing-auth/${selectedOption.value}`);
+        const { email, phone } = response.data;
+        setFormData((prev) => ({
+          ...prev,
+          LeadEmail: email, // Auto-fill the email
+          phoneNumber: phone, // Auto-fill the phone number
+        }));
+      } catch (error) {
+        console.error("Error fetching publishing authority details", error);
+      }
+    }
   };
 
   const handleFileChange = (e) => {
@@ -109,37 +129,39 @@ export default function CardNewTender() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try{
+    try {
       if (newTenderSourceAdded) await api.post("/tender-source", { name: formData.TenderSource.label });
       if (newBankAdded) await api.post("/banks", { name: formData.bank.label });
       if (newEmdTypeAdded) await api.post("/emd-types", { name: formData.emdType.label });
-    }catch(err){
+    } catch (err) {
       console.log("Adding a new field", err)
     }
     console.log(formData)
     let emdresponse = "";
-    try{
+    try {
       const emdpayload = {
-        EmdType:formData.emdType.label,
+        EmdType: formData.emdType.label,
         EmdAmount: formData.emdAmount,
         Date: formData.emdDate,
         Bank: formData.bank.label,
         ValidityRequired: formData.validityRequired,
-        ScanCopyId:"placeholderScanCopyId"
+        ScanCopyId: "placeholderScanCopyId"
       }
       console.log(emdpayload)
       emdresponse = await api.post("/emd-details", emdpayload)
-      console.log("EMD created successfully",emdresponse)
-    }catch(error){
+      console.log("EMD created successfully", emdresponse)
+    } catch (error) {
       console.error("Error creating emd details object", error)
       return;
     }
     const emdObjectId = emdresponse.data._id;
-    try{
+    try {
       const tenderpayload = {
         CompanyReferenceNo: formData.CompanyReferenceNo,
         PublisinghAuthObjectId: formData.PublisinghAuthObjectId.value,
         TenderNo: formData.TenderNo,
+        TenderName: formData.TenderName,
+        TenderDescription: formData.TenderDescription,
         TenderPublisingDate: formData.TenderPublisingDate,
         TenderSubmissionDate: formData.TenderSubmissionDate,
         TenderFee: formData.TenderFee,
@@ -149,9 +171,10 @@ export default function CardNewTender() {
         TenderSource: formData.TenderSource.value
       }
       console.log(tenderpayload)
-      const response = await api.post("/lead",tenderpayload)
-      console.log("Tender created successfully",response)
-    }catch(error){
+      const response = await api.post("/lead", tenderpayload)
+      console.log("Tender created successfully", response)
+      history.push(`/admin/tender/${response.data._id}`)
+    } catch (error) {
       console.error("Error creating new tender", error)
     }
   };
@@ -216,10 +239,18 @@ export default function CardNewTender() {
             {renderInput("CompanyReferenceNo", "Company Reference No.")}
             {renderSelect("PublisinghAuthObjectId", "Publishing Authority", publishingAuthorities)}
             {renderInput("TenderNo", "Tender No. (UNIQUE)")}
+            {renderInput("TenderName", "Tender Name (Nickname)")}
+            {renderInput("TenderDescription", "Description")}
             {renderInput("TenderPublisingDate", "Tender Publishing Date", "date")}
             {renderInput("TenderSubmissionDate", "Tender Submission Date", "date")}
-            {reminder && <p className="text-sm text-red-500 mt-2">Reminder: {reminder} (5 days before submission)</p>}
             {renderInput("TenderFee", "Tender Fee", "number")}
+          </div>
+
+          <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">Contact Information</h6>
+          <div className="flex flex-wrap">
+            {renderInput("phoneNumber", "Phone Number")}
+            {renderInput("LeadEmail", "Email", "email")}
+            {renderSelect("TenderSource", "Tender Source", tenderSources, true)}
           </div>
 
           <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">EMD Details</h6>
@@ -244,12 +275,6 @@ export default function CardNewTender() {
             </div>
           </div>
 
-          <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">Contact Information</h6>
-          <div className="flex flex-wrap">
-            {renderInput("phoneNumber", "Phone Number")}
-            {renderInput("LeadEmail", "Email", "email")}
-            {renderSelect("TenderSource", "Tender Source", tenderSources, true)}
-          </div>
         </form>
       </div>
     </div>
