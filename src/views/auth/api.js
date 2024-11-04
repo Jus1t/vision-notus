@@ -1,8 +1,7 @@
-// api.js
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000/api',
   withCredentials: true,
 });
 
@@ -24,7 +23,6 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => {
-    // Check if a new token is returned in the response
     const newToken = response.data.token;
     if (newToken) {
       console.log('New token received, updating local storage.');
