@@ -118,7 +118,7 @@ export default function CardViewBOQs({ color = "light" }) {
               <tr key={index}>
                 <td className={tdClass}>{boq.BoqSerialNo}</td>
                 <td className={tdClass}>{publishingAuthMap[boq.PublishingAuthId] || "N/A"}</td>
-                <td className={tdClass}>{tenderMap[boq.TenderNo] || "N/A"}</td>
+                <td className={tdClass}>{tenderMap[boq.TenderObjId] || "N/A"}</td>
                 <td className={tdClass}>
                   <button
                     className="bg-lightBlue-500 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md mr-2"

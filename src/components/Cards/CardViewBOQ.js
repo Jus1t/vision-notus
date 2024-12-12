@@ -1,6 +1,8 @@
+// src/components/CardViewBOQ.js
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from 'views/auth/api';
+import ExportButton from '../Buttons/ExportButton'; // Import the ExportButton component
 
 const CardViewBOQ = ({ color = 'light' }) => {
   const { id } = useParams(); // Get BOQ id from URL parameters
@@ -18,13 +20,14 @@ const CardViewBOQ = ({ color = 'light' }) => {
         const response = await api.get(`/boq-details/${id}`);
         const boqDetails = response.data;
         setBoqData(boqDetails);
+        console.log(boqDetails);
 
         // Fetch the publishing authority name using the PublishingAuthId from the BOQ details
         const pubAuthResponse = await api.get(`/publishing-auth/${boqDetails.PublishingAuthId}`);
         setPublishingAuthority(pubAuthResponse.data.name);
 
-        // Fetch the TenderName using the TenderNo from the BOQ details
-        const tenderResponse = await api.get(`/lead/${boqDetails.TenderNo}`);
+        // Fetch the TenderName using the TenderObjId from the BOQ details
+        const tenderResponse = await api.get(`/lead/${boqDetails.TenderObjId}`);
         setTenderName(tenderResponse.data.TenderName);
 
         // Fetch item details for each item in the ItemList
@@ -32,9 +35,11 @@ const CardViewBOQ = ({ color = 'light' }) => {
           api.get(`/item-details/${item.ItemObjectId}`)
         );
         const itemDetailsResponses = await Promise.all(itemDetailsPromises);
+        console.log(itemDetailsResponses);
         const itemDetailsData = itemDetailsResponses.map(res => res.data);
         setItemDetails(itemDetailsData);
-        console.log(boqDetails)
+        console.log(boqDetails);
+
         // Fetch product details for each product in the ProductList
         const productDetailsPromises = boqDetails.ProductList.map(product =>
           api.get(`/product-details/${product.Product}`)
@@ -71,9 +76,48 @@ const CardViewBOQ = ({ color = 'light' }) => {
     'border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4';
 
   // Calculate total SOR Amount
-  const totalSorAmount =
-    boqData.ItemList &&
-    boqData.ItemList.reduce((acc, item) => acc + item.SorAmount, 0).toFixed(2);
+  let totalSorAmount = 0;
+
+  if (boqData.ItemList && boqData.ItemList.length > 0) {
+    totalSorAmount += boqData.ItemList.reduce((acc, item) => acc + (item.SorAmount || 0), 0);
+  }
+
+  if (boqData.ProductList && boqData.ProductList.length > 0) {
+    totalSorAmount += boqData.ProductList.reduce((acc, item) => acc + (item.SorAmount || 0), 0);
+  }
+
+  totalSorAmount = totalSorAmount.toFixed(2);
+
+  // Define headers for Excel export
+  const excelHeaders = ['#', 'Item/Product Name', 'Quantity', 'SOR Rate', 'SOR Amount'];
+
+  // Prepare data for export (combine items and products)
+  const exportData = [
+    // Items
+    ...itemDetails.map((item, index) => ({
+      '#': index + 1,
+      'Item/Product Name': item.ShortDesc,
+      Quantity: boqData.ItemList[index].ReqQty,
+      'SOR Rate': boqData.ItemList[index].SorRate,
+      'SOR Amount': boqData.ItemList[index].SorAmount.toFixed(2),
+    })),
+    // Products
+    ...productDetails.map((product, index) => ({
+      '#': itemDetails.length + index + 1,
+      'Item/Product Name': product.productName,
+      Quantity: boqData.ProductList[index].ReqQty,
+      'SOR Rate': boqData.ProductList[index].SorRate,
+      'SOR Amount': boqData.ProductList[index].SorAmount.toFixed(2),
+    })),
+    // Summary Row
+    {
+      '#': '',
+      'Item/Product Name': 'Total SOR Amount',
+      Quantity: '',
+      'SOR Rate': '',
+      'SOR Amount': totalSorAmount,
+    },
+  ];
 
   return (
     <div
@@ -83,7 +127,16 @@ const CardViewBOQ = ({ color = 'light' }) => {
       }
     >
       <div className="rounded-t bg-white mb-0 px-6 py-6">
-        <h6 className="text-blueGray-700 text-xl font-bold">BOQ Details</h6>
+        <div className="flex flex-wrap items-center justify-between">
+          <h6 className="text-blueGray-700 text-xl font-bold">BOQ Details</h6>
+          {/* Export Button */}
+          <ExportButton
+            data={exportData}
+            fileName={`BOQ_${boqData.BoqSerialNo}`}
+            headers={excelHeaders}
+            buttonLabel="Export to Excel"
+          />
+        </div>
       </div>
       <div className="px-4 lg:px-10 py-10 pt-0">
         <div className="mb-6">
@@ -126,7 +179,7 @@ const CardViewBOQ = ({ color = 'light' }) => {
             </thead>
             <tbody>
               {itemDetails.map((item, index) => (
-                <tr key={index}>
+                <tr key={`item-${index}`}>
                   <td className={tdClass}>{index + 1}</td>
                   <td className={tdClass}>{item.ShortDesc}</td>
                   <td className={tdClass}>{boqData.ItemList[index].ReqQty}</td>
@@ -142,26 +195,27 @@ const CardViewBOQ = ({ color = 'light' }) => {
                       to={`/admin/viewproduct/${product._id}`}
                       style={{
                         color: '#2563eb',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
                       }}
-                      onMouseEnter={(e) => e.target.style.color = '#1e40af'}
-                      onMouseLeave={(e) => e.target.style.color = '#2563eb'}
+                      onMouseEnter={e => (e.target.style.color = '#1e40af')}
+                      onMouseLeave={e => (e.target.style.color = '#2563eb')}
                       target="_blank"
+                      rel="noopener noreferrer"
                     >
                       {product.productName}
                     </Link>
-
                   </td>
                   <td className={tdClass}>{boqData.ProductList[index].ReqQty}</td>
                   <td className={tdClass}>{boqData.ProductList[index].SorRate}</td>
                   <td className={tdClass}>{boqData.ProductList[index].SorAmount.toFixed(2)}</td>
                 </tr>
               ))}
+              {/* Note: No summary row added to the display table */}
             </tbody>
           </table>
         </div>
 
-        {/* Display total SOR Amount */}
+        {/* Optional: Separate Total Display Below the Table */}
         <div className="mt-4">
           <h6 className="text-blueGray-700 text-lg font-bold">
             Total SOR Amount: {totalSorAmount}

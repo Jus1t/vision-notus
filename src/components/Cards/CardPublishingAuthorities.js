@@ -1,5 +1,7 @@
+// src/components/CardPublishingAuthorities.js
 import React, { useState, useEffect } from 'react';
 import api from 'views/auth/api';
+import ExportButton from '../Buttons/ExportButton'; // Import the ExportButton component
 
 const CardPublishingAuthorities = ({ color = "light" }) => {
   const [authorities, setAuthorities] = useState([]);
@@ -89,6 +91,18 @@ const CardPublishingAuthorities = ({ color = "light" }) => {
 
   const totalPages = Math.ceil(authorities.length / authoritiesPerPage);
 
+  // Define headers for Excel export
+  const excelHeaders = ['Name', 'Company', 'Location', 'Phone', 'Email'];
+
+  // Prepare data for export
+  const exportData = authorities.map(authority => ({
+    'Name': authority.name || 'N/A',
+    'Company': authority.company || 'N/A',
+    'Location': authority.location || 'N/A',
+    'Phone': authority.phone || 'N/A',
+    'Email': authority.email || 'N/A',
+  }));
+
   // Define classes for styling
   const columnbaseclass =
     "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left ";
@@ -106,17 +120,22 @@ const CardPublishingAuthorities = ({ color = "light" }) => {
       }
     >
       <div className="rounded-t mb-0 px-4 py-3 border-0">
-        <div className="flex flex-wrap items-center">
-          <div className="relative w-full px-4 max-w-full flex-grow flex-1">
-            <h3
-              className={
-                "font-semibold text-lg " +
-                (color === "light" ? "text-blueGray-700" : "text-white")
-              }
-            >
-              Publishing Authorities
-            </h3>
-          </div>
+        <div className="flex flex-wrap items-center justify-between">
+          <h3
+            className={
+              "font-semibold text-lg " +
+              (color === "light" ? "text-blueGray-700" : "text-white")
+            }
+          >
+            Publishing Authorities
+          </h3>
+          {/* Export Button */}
+          <ExportButton
+            data={exportData}
+            fileName="Publishing_Authorities_List"
+            headers={excelHeaders}
+            buttonLabel="Export to Excel"
+          />
         </div>
       </div>
       <div className="block w-full overflow-x-auto">
@@ -212,11 +231,11 @@ const CardPublishingAuthorities = ({ color = "light" }) => {
                 ) : (
                   // Render normal display
                   <>
-                    <td className={tdClass}>{authority.name}</td>
-                    <td className={tdClass}>{authority.company}</td>
-                    <td className={tdClass}>{authority.location}</td>
-                    <td className={tdClass}>{authority.phone}</td>
-                    <td className={tdClass}>{authority.email}</td>
+                    <td className={tdClass}>{authority.name || 'N/A'}</td>
+                    <td className={tdClass}>{authority.company || 'N/A'}</td>
+                    <td className={tdClass}>{authority.location || 'N/A'}</td>
+                    <td className={tdClass}>{authority.phone || 'N/A'}</td>
+                    <td className={tdClass}>{authority.email || 'N/A'}</td>
                     <td className={tdClass}>
                       {/* Edit Button */}
                       <button
@@ -247,7 +266,9 @@ const CardPublishingAuthorities = ({ color = "light" }) => {
         <button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="px-3 py-1 mx-1 bg-gray-300 rounded"
+          className={`px-3 py-1 mx-1 bg-gray-300 rounded ${
+            currentPage === 1 ? 'cursor-not-allowed opacity-50' : ''
+          }`}
         >
           &lt;
         </button>
@@ -256,7 +277,7 @@ const CardPublishingAuthorities = ({ color = "light" }) => {
             key={index}
             onClick={() => handlePageChange(index + 1)}
             className={`px-3 py-1 mx-1 ${
-              currentPage === index + 1 ? "bg-blue-500 text-blueGray-400" : "bg-gray-300"
+              currentPage === index + 1 ? "bg-blue-500 text-white" : "bg-gray-300 text-black"
             } rounded`}
           >
             {index + 1}
@@ -265,7 +286,9 @@ const CardPublishingAuthorities = ({ color = "light" }) => {
         <button
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="px-3 py-1 mx-1 bg-gray-300 rounded"
+          className={`px-3 py-1 mx-1 bg-gray-300 rounded ${
+            currentPage === totalPages ? 'cursor-not-allowed opacity-50' : ''
+          }`}
         >
           &gt;
         </button>

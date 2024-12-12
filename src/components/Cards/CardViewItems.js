@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from 'views/auth/api'; // Replace with your actual API import
+import ExportButton from '../Buttons/ExportButton';
 
 // Dummy data in case API call fails
 const dummyItems = [
@@ -34,13 +35,16 @@ const CardViewItems = ({ color = "light" }) => {
   const [currentPage, setCurrentPage] = useState(1); // Pagination state
   const itemsPerPage = 10; // Number of items per page
 
+
+  
+  
   const columnbaseclass =
-    "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left ";
+  "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left ";
   const lightClass = "bg-blueGray-50 text-blueGray-500 border-blueGray-100";
   const darkClass = "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700";
   const columnselectedclass = color === "light" ? lightClass : darkClass;
   const tdClass = "border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4";
-
+  
   useEffect(() => {
     const fetchItems = async () => {
       try {
@@ -53,9 +57,17 @@ const CardViewItems = ({ color = "light" }) => {
         setLoading(false);
       }
     };
-
+    
     fetchItems();
   }, []);
+
+  const excelHeaders = ["ItemSerialNo", "ShortDesc", "LongDesc", "Uom"];
+    const exportData = items.map(item => ({
+    ItemSerialNo: item.ItemSerialNo,
+    ShortDesc: item.ShortDesc,
+    LongDesc: item.LongDesc,
+    Uom: item.Uom,
+  }));
 
   const handleEditItem = (item) => {
     setEditingItemId(item._id);
@@ -135,6 +147,14 @@ const CardViewItems = ({ color = "light" }) => {
             >
               Items
             </h3>
+          </div>
+          <div className="relative w-full px-4 max-w-full flex-grow flex-1 text-right">
+            <ExportButton
+              data={exportData}
+              fileName="Items"
+              headers={excelHeaders}
+              buttonLabel="Export to Excel"
+            />
           </div>
         </div>
       </div>

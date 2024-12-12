@@ -246,7 +246,7 @@ export default function CardCreateBOQ({ color = "light" }) {
 
     const boqdetails = {
       PublishingAuthId: formData.pubauthid.value,
-      TenderNo: formData.tenderNo.value,
+      TenderObjId: formData.tenderNo.value,
       BoqSerialNo: formData.boqSerialNo,
       ItemList: processedItems,
       ProductList: processedProducts,

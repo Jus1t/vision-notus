@@ -1,6 +1,8 @@
+// src/components/CardTenders.js
 import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import api from 'views/auth/api';
+import ExportButton from '../Buttons/ExportButton'; // Import the ExportButton component
 
 const CardTenders = ({ color = "light" }) => {
   const [tenders, setTenders] = useState([]);
@@ -56,6 +58,29 @@ const CardTenders = ({ color = "light" }) => {
 
   const totalPages = Math.ceil(tenders.length / tendersPerPage);
 
+  // Define headers for Excel export
+  const excelHeaders = ['Tender No.', 'Company Reference No.', 'Contact Details', 'Email'];
+
+  // Prepare data for export
+  const exportData = tenders.map(tender => ({
+    'Tender No.': tender.TenderNo || 'N/A',
+    'Company Reference No.': tender.CompanyReferenceNo || 'N/A',
+    'Contact Details': tender.LeadPhoneNumber && tender.LeadPhoneNumber.length > 0
+      ? tender.LeadPhoneNumber.join(', ')
+      : 'N/A',
+    'Email': tender.LeadEmail && tender.LeadEmail.length > 0
+      ? tender.LeadEmail.join(', ')
+      : 'N/A',
+  }));
+
+  // Define classes for styling
+  const columnbaseclass =
+    "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left ";
+  const lightClass = "bg-blueGray-50 text-blueGray-500 border-blueGray-100";
+  const darkClass = "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700";
+  const columnselectedclass = color === "light" ? lightClass : darkClass;
+  const tdClass = "border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4";
+
   return (
     <div
       className={
@@ -64,17 +89,22 @@ const CardTenders = ({ color = "light" }) => {
       }
     >
       <div className="rounded-t mb-0 px-4 py-3 border-0">
-        <div className="flex flex-wrap items-center">
-          <div className="relative w-full px-4 max-w-full flex-grow flex-1">
-            <h3
-              className={
-                "font-semibold text-lg " +
-                (color === "light" ? "text-blueGray-700" : "text-white")
-              }
-            >
-              Tenders
-            </h3>
-          </div>
+        <div className="flex flex-wrap items-center justify-between">
+          <h3
+            className={
+              "font-semibold text-lg " +
+              (color === "light" ? "text-blueGray-700" : "text-white")
+            }
+          >
+            Tenders
+          </h3>
+          {/* Export Button */}
+          <ExportButton
+            data={exportData}
+            fileName="Tenders_List"
+            headers={excelHeaders}
+            buttonLabel="Export to Excel"
+          />
         </div>
       </div>
       <div className="block w-full overflow-x-auto">
@@ -82,19 +112,18 @@ const CardTenders = ({ color = "light" }) => {
         <table className="items-center w-full bg-transparent border-collapse">
           <thead>
             <tr>
-              <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left bg-blueGray-50 text-blueGray-500 border-blueGray-100">
-                Tender No.
-              </th>
-              <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left bg-blueGray-50 text-blueGray-500 border-blueGray-100">
-                Company Reference No.
-              </th>
-              <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left bg-blueGray-50 text-blueGray-500 border-blueGray-100">
-                Contact Details
-              </th>
-              <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left bg-blueGray-50 text-blueGray-500 border-blueGray-100">
-                Email
-              </th>
-              <th className="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left bg-blueGray-50 text-blueGray-500 border-blueGray-100">
+              <th className={columnbaseclass + columnselectedclass}>Tender No.</th>
+              <th className={columnbaseclass + columnselectedclass}>Company Reference No.</th>
+              <th className={columnbaseclass + columnselectedclass}>Contact Details</th>
+              <th className={columnbaseclass + columnselectedclass}>Email</th>
+              <th
+                className={
+                  "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
+                  (color === "light"
+                    ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
+                    : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
+                }
+              >
                 Actions
               </th>
             </tr>
@@ -102,19 +131,19 @@ const CardTenders = ({ color = "light" }) => {
           <tbody>
             {currentTenders.map((tender) => (
               <tr key={tender._id}>
-                <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                  {tender.TenderNo}
+                <td className={tdClass}> {tender.TenderNo || 'N/A'} </td>
+                <td className={tdClass}> {tender.CompanyReferenceNo || 'N/A'} </td>
+                <td className={tdClass}>
+                  {tender.LeadPhoneNumber && tender.LeadPhoneNumber.length > 0
+                    ? tender.LeadPhoneNumber.join(', ')
+                    : 'N/A'}
                 </td>
-                <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                  {tender.CompanyReferenceNo}
+                <td className={tdClass}>
+                  {tender.LeadEmail && tender.LeadEmail.length > 0
+                    ? tender.LeadEmail.join(', ')
+                    : 'N/A'}
                 </td>
-                <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                  {tender.LeadPhoneNumber}
-                </td>
-                <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                  {tender.LeadEmail}
-                </td>
-                <td className="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
+                <td className={tdClass}>
                   <button
                     onClick={() => handleShowDetails(tender._id)}
                     className="bg-lightBlue-500 text-white active:bg-lightBlue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-2 ease-linear transition-all duration-150"
@@ -138,7 +167,9 @@ const CardTenders = ({ color = "light" }) => {
         <button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="px-3 py-1 mx-1 bg-gray-300 rounded"
+          className={`px-3 py-1 mx-1 bg-gray-300 rounded ${
+            currentPage === 1 ? 'cursor-not-allowed opacity-50' : ''
+          }`}
         >
           &lt;
         </button>
@@ -147,7 +178,7 @@ const CardTenders = ({ color = "light" }) => {
             key={index}
             onClick={() => handlePageChange(index + 1)}
             className={`px-3 py-1 mx-1 ${
-              currentPage === index + 1 ? "bg-blue-500 text-blueGray-400" : "bg-gray-300"
+              currentPage === index + 1 ? "bg-blue-500 text-white" : "bg-gray-300 text-black"
             } rounded`}
           >
             {index + 1}
@@ -156,7 +187,9 @@ const CardTenders = ({ color = "light" }) => {
         <button
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="px-3 py-1 mx-1 bg-gray-300 rounded"
+          className={`px-3 py-1 mx-1 bg-gray-300 rounded ${
+            currentPage === totalPages ? 'cursor-not-allowed opacity-50' : ''
+          }`}
         >
           &gt;
         </button>
@@ -166,4 +199,3 @@ const CardTenders = ({ color = "light" }) => {
 };
 
 export default CardTenders;
-  
