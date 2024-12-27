@@ -37,6 +37,10 @@ const CardViewEmployees = ({ color = "light" }) => {
     history.push(`/admin/employee/${employeeId}`);
   };
 
+  const handleCard = (employeeId) => {
+    history.push(`/admin/attendance-card/${employeeId}`);
+  };
+
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
@@ -115,6 +119,16 @@ const CardViewEmployees = ({ color = "light" }) => {
               >
                 Action
               </th> 
+              <th
+                className={
+                  "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
+                  (color === "light"
+                    ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
+                    : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
+                }
+              >
+                View Attendance Card
+              </th> 
             </tr>
           </thead>
           <tbody>
@@ -130,6 +144,14 @@ const CardViewEmployees = ({ color = "light" }) => {
                     className="bg-lightBlue-500 text-white active:bg-lightBlue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
                   >
                     Details
+                  </button>
+                </td>
+                <td className={tdClass}>
+                  <button
+                    onClick={() => handleCard(user.EmployeeObjectId)}
+                    className="bg-lightBlue-500 text-white active:bg-lightBlue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                  >
+                    Card
                   </button>
                 </td>
               </tr>

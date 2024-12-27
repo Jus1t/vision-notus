@@ -27,6 +27,9 @@ import ViewProducts from "views/admin/ViewProducts"
 import CreateProduct from "views/admin/CreateProduct"
 import ViewProductDetails from "views/admin/ViewProductDetails";
 import ViewTenderDetails from "views/admin/ViewTenderDetails";
+import QRCodeScanner from "components/Cards/CardQrCode";
+import AttendanceCard from "components/Cards/CardAttendanceGen";
+
 
 export default function Admin() {
   const showHeaderStats = false;
@@ -60,6 +63,9 @@ export default function Admin() {
             <ProtectedRoute path="/admin/addproduct" exact component={CreateProduct} />
             <ProtectedRoute path="/admin/viewproducts" exact component={ViewProducts} />
             <ProtectedRoute path="/admin/viewproduct/:id" exact component={ViewProductDetails} />
+            <ProtectedRoute path="/admin/attendance" exact component={QRCodeScanner} />
+            <ProtectedRoute path="/admin/attendance-card/:id" exact component={AttendanceCard} />
+            
             <Redirect from="*" to="/admin/dashboard" />
           </Switch>
         </div>

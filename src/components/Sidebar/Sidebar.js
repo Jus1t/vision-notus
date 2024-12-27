@@ -73,6 +73,10 @@ export default function Sidebar() {
     
   ];
 
+  const attendanceLinks=[
+    {name:"Mark Attendance",path:"/admin/attendance",icon:"fas fa-file-invoice-dollar"},
+  ];
+
   return (
     <>
       <nav className="md:left-0 md:block md:fixed md:top-0 md:bottom-0 md:overflow-y-auto md:flex-row md:flex-nowrap md:overflow-hidden shadow-xl bg-white flex flex-wrap items-center justify-between relative md:w-64 z-10 py-4 px-6">
@@ -172,6 +176,9 @@ export default function Sidebar() {
 
             {/* BOQ Section */}
             <SidebarSection title="BOQ Management" links={boqLinks} />
+
+            {/* BOQ Section */}
+            <SidebarSection title="Attendance Management" links={attendanceLinks} />
 
           </div>
         </div>
