@@ -53,8 +53,8 @@ const QRCodeScanner = () => {
           <QrReader
           constraints={{ facingMode: "environment" }} // Use back camera
           onResult={(result, error) => {
-              if (result) console.log(result);
-              if (error) console.error(error);
+              if (result) handleScan(result);
+              if (error) handleError(error);
           }}
           style={{ width: "100%" }}
       />
