@@ -51,12 +51,13 @@ const QRCodeScanner = () => {
       <div style={{ width: "300px", margin: "0 auto" }}>
         {qrActive && ( // Only render the QR reader when QR scanning is active
           <QrReader
-            onResult={(result, error) => {
-              if (error) handleError(error);
-              if (result) handleScan(result);
-            }}
-            style={{ width: "100%" }}
-          />
+          constraints={{ facingMode: "environment" }} // Use back camera
+          onResult={(result, error) => {
+              if (result) console.log(result);
+              if (error) console.error(error);
+          }}
+          style={{ width: "100%" }}
+      />
         )}
       </div>
       {scannedData && (
