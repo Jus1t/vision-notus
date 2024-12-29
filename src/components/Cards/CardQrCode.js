@@ -18,8 +18,8 @@ const QRCodeScanner = () => {
       if (scanResult) {
         setScannedData(scanResult);
         // setError(null); // Clear any previous errors
-        const currentDate = new Date().toLocaleDateString();
-        const currentTime = new Date().toLocaleTimeString();
+        const currentDate = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
+        const currentTime = new Date().toTimeString().split(" ")[0]; // "HH:MM:SS"
 
         const payload ={
           employeeObjectId:scanResult,
@@ -49,8 +49,8 @@ const QRCodeScanner = () => {
       if (scanResult) {
         setScannedData(scanResult);
         // setError(null); // Clear any previous errors
-        const currentDate= new Date().toLocaleDateString();
-        const currentTime= new Date().toLocaleTimeString();
+        const currentDate = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
+        const currentTime = new Date().toTimeString().split(" ")[0]; // "HH:MM:SS"
         const payload ={
           employeeObjectId:scanResult,
           markedBy:payloadJWT.data.oid,
