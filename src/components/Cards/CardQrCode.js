@@ -199,6 +199,7 @@ const QRCodeScanner = () => {
             <h3>What do you want to mark?</h3>
             <button
               onClick={handleInTime}
+              onTouchStart={handleInTime}
               style={{
                 marginTop: "20px",
                 padding: "2px 5px",
@@ -207,12 +208,15 @@ const QRCodeScanner = () => {
                 border: "none",
                 borderRadius: "2px",
                 cursor: "pointer",
+                zIndex:10,
+                touchAction: "manipulation",
               }}
             >
               InTime
             </button>
             <button
               onClick={handleOutTime}
+              onTouchStart={handleOutTime}
               style={{
                 marginTop: "20px",
                 marginLeft: "10px",
@@ -222,6 +226,8 @@ const QRCodeScanner = () => {
                 border: "none",
                 borderRadius: "4px",
                 cursor: "pointer",
+                zIndex:10,
+                touchAction: "manipulation",
               }}
             >
               OutTime
