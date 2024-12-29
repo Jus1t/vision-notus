@@ -28,7 +28,7 @@ const QRCodeScanner = () => {
           inTime:currentTime,
           outTime:"",
         };
-        // console.log(payload);
+        console.log(payload);
         const response = await api.post(`/attendance`,payload);
         console.log(response.data);
         // setShowModal(true); // Show the modal
@@ -57,9 +57,9 @@ const QRCodeScanner = () => {
           date:currentDate,
           outTime:currentTime,
         };
-        // console.log(payload);
+        console.log(payload);
         const response = await api.post(`/attendance/outtime`,payload);
-        // console.log(response.data);
+        console.log(response.data);
         setShowModal(true); // Show the modal
         setMessage(response.data.message);
         setMessageBox(true);
