@@ -16,9 +16,16 @@ export const AuthProvider = ({ children }) => {
         return;
       }
       else {
-        setIsAuthenticated(true);
-        setLoading(false);
-        return;
+        try {
+          const response =await api.get('/verify-token');
+          setIsAuthenticated(true);
+          setLoading(false);
+          return;
+        } catch (error) {
+          setIsAuthenticated(false);
+          setLoading(false);
+          return;
+        }
       }
     }
     verifyToken();

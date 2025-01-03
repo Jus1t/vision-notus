@@ -1,4 +1,3 @@
-// src/components/CardViewEmployees.js
 import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import api from 'views/auth/api';
@@ -6,6 +5,8 @@ import ExportButton from '../Buttons/ExportButton'; // Import the ExportButton c
 
 const CardViewEmployees = ({ color = "light" }) => {
   const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1); // Pagination state
   const usersPerPage = 10; // Number of users per page
@@ -23,6 +24,7 @@ const CardViewEmployees = ({ color = "light" }) => {
       try {
         const response = await api.get('/user-profile');
         setUsers(response.data);
+        setFilteredUsers(response.data); // Initialize filtered users
         setLoading(false);
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -33,12 +35,27 @@ const CardViewEmployees = ({ color = "light" }) => {
     fetchUsers();
   }, []);
 
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+
+    const filtered = users.filter(user =>
+      `${user.FirstName} ${user.LastName}`.toLowerCase().includes(value)
+    );
+    setFilteredUsers(filtered);
+    setCurrentPage(1); // Reset to the first page
+  };
+
   const handleShowDetails = (employeeId) => {
     history.push(`/admin/employee/${employeeId}`);
   };
 
   const handleCard = (employeeId) => {
     history.push(`/admin/attendance-card/${employeeId}`);
+  };
+
+  const handleWorkingHistory = (employeeId) =>{
+    history.push(`/admin/working-history/${employeeId}`);
   };
 
   const handlePageChange = (pageNumber) => {
@@ -55,13 +72,13 @@ const CardViewEmployees = ({ color = "light" }) => {
   // Get current users for pagination
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
+  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
 
   if (loading) {
     return <div className="text-center py-8">Loading...</div>;
   }
 
-  const totalPages = Math.ceil(users.length / usersPerPage);
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
   // Define headers for Excel export
   const excelHeaders = ['Name', 'Role', 'Email', 'Phone'];
@@ -99,6 +116,16 @@ const CardViewEmployees = ({ color = "light" }) => {
             buttonLabel="Export to Excel"
           />
         </div>
+        {/* Search Input */}
+        <div className="mt-4">
+          <input
+            type="text"
+            placeholder="Search by name..."
+            value={searchTerm}
+            onChange={handleSearch}
+            className="px-4 py-2 border rounded-lg w-full"
+          />
+        </div>
       </div>
       <div className="block w-full overflow-x-auto">
         {/* Employees table */}
@@ -127,7 +154,17 @@ const CardViewEmployees = ({ color = "light" }) => {
                     : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
                 }
               >
-                View Attendance Card
+                 Card
+              </th> 
+              <th
+                className={
+                  "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
+                  (color === "light"
+                    ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
+                    : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
+                }
+              >
+                 Work History
               </th> 
             </tr>
           </thead>
@@ -152,6 +189,14 @@ const CardViewEmployees = ({ color = "light" }) => {
                     className="bg-lightBlue-500 text-white active:bg-lightBlue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
                   >
                     Card
+                  </button>
+                </td>
+                <td className={tdClass}>
+                  <button
+                    onClick={() => handleWorkingHistory(user.EmployeeObjectId)}
+                    className="bg-lightBlue-500 text-white active:bg-lightBlue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                  >
+                    WorkHistory
                   </button>
                 </td>
               </tr>

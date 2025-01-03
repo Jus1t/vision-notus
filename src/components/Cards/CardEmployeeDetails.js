@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from 'views/auth/api';
+import { useHistory } from 'react-router-dom';
 
 export default function CardEmployeeDetails() {
   const [employee, setEmployee] = useState(null);
@@ -11,7 +12,7 @@ export default function CardEmployeeDetails() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [formEmpDetails, setFormEmpDetails] = useState({});
   const [originalValues, setOriginalValues] = useState({});
-
+  const history = useHistory();
   useEffect(() => {
     const fetchEmployeeDetails = async () => {
       try {
@@ -20,7 +21,7 @@ export default function CardEmployeeDetails() {
 
         const response = await api.get(`/employee-details/${id}`);
         const employeeData = response.data;
-
+        console.log(response.data);
         // Format date fields to YYYY-MM-DD for input type="date"
         const formattedEmpDetails = {
           ...employeeData,
@@ -48,6 +49,11 @@ export default function CardEmployeeDetails() {
   const handleEditClick = () => {
     setIsEditMode(true);
   };
+
+  const handleWorkHistoryClick = () => {
+    history.push(`/admin/working-history/${id}`);
+  };
+  
 
   const handleCancelClick = () => {
     setFormEmpDetails(originalValues); // Reset to original values
@@ -129,6 +135,13 @@ export default function CardEmployeeDetails() {
               </button>
             </div>
           )}
+            <button
+              className="bg-orange-500 text-white active:bg-lightBlue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 ease-linear transition-all duration-150"
+              type="button"
+              onClick={handleWorkHistoryClick} // This should enable edit mode
+            >
+              work history
+            </button>
         </div>
       </div>
       <div className="flex-auto px-4 lg:px-10 py-10 pt-0">

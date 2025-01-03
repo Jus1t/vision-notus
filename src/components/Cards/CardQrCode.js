@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { QrReader } from "react-qr-reader";
 import api from "views/auth/api";
+import { useHistory } from 'react-router-dom';
 // import {Date} from "date";
 const QRCodeScanner = () => {
   const [scannedData, setScannedData] = useState(null);
@@ -11,6 +12,8 @@ const QRCodeScanner = () => {
   const [messageBox,setMessageBox] = useState(false);
   const [message ,setMessage] =useState(null);
   const [scanResult,setScanResult] =useState(null);
+  const history = useHistory();
+
   const handleInTime=async(result) =>{
     try {
       let payloadJWT = await api.get(`/verify-token`);
@@ -84,6 +87,24 @@ const QRCodeScanner = () => {
     } catch (error) {
       console.error("Error verifying token:", error);
       setQrActive(true);
+    }
+  };
+  
+  const handleEmployeePage = async() =>{
+    try {
+      history.push(`/admin/employee/${scanResult}`);
+    } catch (error) {
+      console.log(error.message);
+
+    }
+  };
+
+  const handleWorkHistoryClick = async() =>{
+    try {
+      history.push(`/admin/working-history/${scanResult}`);
+    } catch (error) {
+      console.log(error.message);
+
     }
   };
 
@@ -212,7 +233,7 @@ const QRCodeScanner = () => {
                 touchAction: "manipulation",
               }}
             >
-              InTime
+              In Time
             </button>
             <button
               onClick={handleOutTime}
@@ -230,7 +251,43 @@ const QRCodeScanner = () => {
                 touchAction: "manipulation",
               }}
             >
-              OutTime
+              Out Time
+            </button>
+            <button
+              onClick={handleEmployeePage}
+              onTouchStart={handleEmployeePage}
+              style={{
+                marginTop: "20px",
+                marginLeft: "10px",
+                padding: "2px 5px",
+                backgroundColor: "#4caf50",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                zIndex:10,
+                touchAction: "manipulation",
+              }}
+            >
+              Employee Details
+            </button>
+            <button
+              onClick={handleWorkHistoryClick}
+              onTouchStart={handleWorkHistoryClick}
+              style={{
+                marginTop: "20px",
+                marginLeft: "10px",
+                padding: "2px 5px",
+                backgroundColor: "#4caf50",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                zIndex:10,
+                touchAction: "manipulation",
+              }}
+            >
+              Work History
             </button>
           </div>
         </div>

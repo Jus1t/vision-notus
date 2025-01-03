@@ -212,6 +212,17 @@ export default function CardCreateEmployee() {
     
         console.log('User created successfully');
       }
+      else{
+        const user = {
+          FirstName: formData.FirstName,
+          LastName: formData.LastName,
+          PhoneNumber: formData.ContactDetails,
+          Email: "",
+          Role: formData.role,
+          EmployeeObjectId: employeeId
+        };
+        await api.post('/user-profile', user);
+      }
       
       // Redirect to the employee detail page
       history.push(`/admin/employee/${employeeId}`);
