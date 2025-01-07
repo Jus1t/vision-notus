@@ -81,6 +81,11 @@ export default function CardCreateEmployee() {
       "licenseScanFront", "licenseScanBack", "adhaarScan"
     ];
 
+    // Add wagePerDay to required fields only if role is employee
+    if (formData.role === "employee") {
+      requiredFields.push("wagePerDay");
+    }
+
     // If role is not 'Employee', add user-specific fields
     if (formData.role !== "employee") {
       requiredFields.push("email", "password", "confirmPassword");
@@ -176,6 +181,7 @@ export default function CardCreateEmployee() {
         NameOfBankAndBranch: formData.bankBranch,
         IfscCode: formData.ifscCode,
         PfNo: formData.pfNumber,
+        ...(formData.role === "employee" ? { WagePerDay: formData.wagePerDay } : {}),
         EsiCode: formData.esiCode
       };
       
@@ -291,6 +297,9 @@ export default function CardCreateEmployee() {
     { component: TextInput, label: "Name of Bank and Branch", id: "bankBranch", required: true },
     { component: TextInput, label: "IFSC Code", id: "ifscCode", required: true },
     { component: TextInput, label: "PF No.", id: "pfNumber", required: true },
+    ...(formData.role === "employee" ? [
+      { component: TextInput, label: "Wage Per Day", id: "wagePerDay", required: true, type: "number" }
+    ] : []),
     { component: TextInput, label: "ESIC Code", id: "esiCode", required: true },
   ];
   

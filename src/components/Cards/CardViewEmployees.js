@@ -12,11 +12,6 @@ const CardViewEmployees = ({ color = "light" }) => {
   const usersPerPage = 10; // Number of users per page
   const history = useHistory();
 
-  const columnbaseclass =
-    "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left ";
-  const lightClass = "bg-blueGray-50 text-blueGray-500 border-blueGray-100";
-  const darkClass = "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700";
-  const columnselectedclass = color === "light" ? lightClass : darkClass;
   const tdClass = "border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4";
 
   useEffect(() => {
@@ -46,16 +41,8 @@ const CardViewEmployees = ({ color = "light" }) => {
     setCurrentPage(1); // Reset to the first page
   };
 
-  const handleShowDetails = (employeeId) => {
-    history.push(`/admin/employee/${employeeId}`);
-  };
-
-  const handleCard = (employeeId) => {
-    history.push(`/admin/attendance-card/${employeeId}`);
-  };
-
-  const handleWorkingHistory = (employeeId) =>{
-    history.push(`/admin/working-history/${employeeId}`);
+  const handleNavigation = (employeeId, path) => {
+    history.push(`/admin/${path}/${employeeId}`);
   };
 
   const handlePageChange = (pageNumber) => {
@@ -66,7 +53,7 @@ const CardViewEmployees = ({ color = "light" }) => {
     if (!role) return '';
     return role
       .replace(/([A-Z])/g, ' $1') // Insert space before capital letters
-      .replace(/^./, function(str){ return str.toUpperCase(); }); // Capitalize the first letter
+      .replace(/^./, str => str.toUpperCase()); // Capitalize the first letter
   };
 
   // Get current users for pagination
@@ -80,10 +67,8 @@ const CardViewEmployees = ({ color = "light" }) => {
 
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
-  // Define headers for Excel export
-  const excelHeaders = ['Name', 'Role', 'Email', 'Phone'];
-
   // Prepare data for export
+  const excelHeaders = ['Name', 'Role', 'Email', 'Phone'];
   const exportData = users.map(user => ({
     Name: `${user.FirstName} ${user.LastName}`,
     Role: formatRoleName(user.Role),
@@ -108,7 +93,6 @@ const CardViewEmployees = ({ color = "light" }) => {
           >
             Employees
           </h3>
-          {/* Export Button */}
           <ExportButton
             data={exportData}
             fileName="Employees_List"
@@ -116,7 +100,6 @@ const CardViewEmployees = ({ color = "light" }) => {
             buttonLabel="Export to Excel"
           />
         </div>
-        {/* Search Input */}
         <div className="mt-4">
           <input
             type="text"
@@ -128,83 +111,42 @@ const CardViewEmployees = ({ color = "light" }) => {
         </div>
       </div>
       <div className="block w-full overflow-x-auto">
-        {/* Employees table */}
         <table className="items-center w-full bg-transparent border-collapse">
           <thead>
             <tr>
-              <th className={columnbaseclass + columnselectedclass}>Name</th>
-              <th className={columnbaseclass + columnselectedclass}>Role</th>
-              <th className={columnbaseclass + columnselectedclass}>Email</th>
-              <th className={columnbaseclass + columnselectedclass}>Phone</th>
-              <th
-                className={
-                  "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                  (color === "light"
-                    ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
-                    : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
-                }
-              >
-                Action
-              </th> 
-              <th
-                className={
-                  "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                  (color === "light"
-                    ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
-                    : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
-                }
-              >
-                 Card
-              </th> 
-              <th
-                className={
-                  "px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left " +
-                  (color === "light"
-                    ? "bg-blueGray-50 text-blueGray-500 border-blueGray-100"
-                    : "bg-lightBlue-800 text-lightBlue-300 border-lightBlue-700")
-                }
-              >
-                 Work History
-              </th> 
+              <th className={tdClass}>Name</th>
+              <th className={tdClass}>Role</th>
+              <th className={tdClass}>Email</th>
+              <th className={tdClass}>Phone</th>
+              <th className={tdClass}>Options</th>
             </tr>
           </thead>
           <tbody>
             {currentUsers.map((user) => (
               <tr key={user._id}>
-                <td className={tdClass}> {user.FirstName} {user.LastName} </td>
-                <td className={tdClass}> {formatRoleName(user.Role)} </td>
-                <td className={tdClass}> {user.Email}  </td>
-                <td className={tdClass}> {user.PhoneNumber} </td>
+                <td className={tdClass}>{user.FirstName} {user.LastName}</td>
+                <td className={tdClass}>{formatRoleName(user.Role)}</td>
+                <td className={tdClass}>{user.Email}</td>
+                <td className={tdClass}>{user.PhoneNumber}</td>
                 <td className={tdClass}>
-                  <button
-                    onClick={() => handleShowDetails(user.EmployeeObjectId)}
-                    className="bg-lightBlue-500 text-white active:bg-lightBlue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                  <select
+                    onChange={(e) => handleNavigation(user.EmployeeObjectId, e.target.value)}
+                    className="border rounded px-2 py-1"
+                    defaultValue=""
                   >
-                    Details
-                  </button>
-                </td>
-                <td className={tdClass}>
-                  <button
-                    onClick={() => handleCard(user.EmployeeObjectId)}
-                    className="bg-lightBlue-500 text-white active:bg-lightBlue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                  >
-                    Card
-                  </button>
-                </td>
-                <td className={tdClass}>
-                  <button
-                    onClick={() => handleWorkingHistory(user.EmployeeObjectId)}
-                    className="bg-lightBlue-500 text-white active:bg-lightBlue-600 font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                  >
-                    WorkHistory
-                  </button>
+                    <option value="" disabled>Select Option</option>
+                    <option value="employee">Details</option>
+                    <option value="attendance-card">Card</option>
+                    <option value="working-history">Work History</option>
+                    <option value="payment-page">Payment</option>
+                    <option value="advance-payment">Advance Payment</option>
+                  </select>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      {/* Pagination Controls */}
       <div className="flex justify-center py-4">
         <button
           onClick={() => handlePageChange(currentPage - 1)}

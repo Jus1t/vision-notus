@@ -108,6 +108,23 @@ const QRCodeScanner = () => {
     }
   };
 
+  const handleAdvancePaymentClick = async() =>{
+    try {
+      history.push(`/admin/advance-payment/${scanResult}`);
+    } catch (error) {
+      console.log(error.message);
+
+    }
+  };
+  const handlePaymentClick = async() =>{
+    try {
+      history.push(`/admin/payment-page/${scanResult}`);
+    } catch (error) {
+      console.log(error.message);
+
+    }
+  };
+
   const handleError = (err) => {
     if (qrActive) {
       // setError("Error scanning QR code. Please try again.");
@@ -288,6 +305,42 @@ const QRCodeScanner = () => {
               }}
             >
               Work History
+            </button>
+            <button
+              onClick={handleAdvancePaymentClick}
+              onTouchStart={handleAdvancePaymentClick}
+              style={{
+                marginTop: "20px",
+                marginLeft: "10px",
+                padding: "2px 5px",
+                backgroundColor: "#4caf50",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                zIndex:10,
+                touchAction: "manipulation",
+              }}
+            >
+              Advance Payment
+            </button>
+            <button
+              onClick={handlePaymentClick}
+              onTouchStart={handlePaymentClick}
+              style={{
+                marginTop: "20px",
+                marginLeft: "10px",
+                padding: "2px 5px",
+                backgroundColor: "#4caf50",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                zIndex:10,
+                touchAction: "manipulation",
+              }}
+            >
+              Payment
             </button>
           </div>
         </div>
