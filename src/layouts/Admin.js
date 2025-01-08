@@ -32,7 +32,7 @@ import AttendanceCard from "components/Cards/CardAttendanceGen";
 import CardWorkHistory from "components/Cards/CardWorkHistory";
 import AdvancePayment from "components/Cards/AdvancePayment";
 import PaymentPage from "components/Cards/PaymentPage";
-
+import CardViewPayments from "components/Cards/CardViewPayments";
 export default function Admin() {
   const showHeaderStats = false;
   return (
@@ -70,6 +70,7 @@ export default function Admin() {
             <ProtectedRoute path="/admin/working-history/:id" exact component={CardWorkHistory} />
             <ProtectedRoute path="/admin/advance-payment/:employeeId" exact component={AdvancePayment} />
             <ProtectedRoute path="/admin/payment-page/:employeeId" exact component={PaymentPage} />
+            <ProtectedRoute path="/admin/view-payments/:employeeId" exact component={CardViewPayments} />
             <Redirect from="*" to="/admin/dashboard" />
           </Switch>
         </div>

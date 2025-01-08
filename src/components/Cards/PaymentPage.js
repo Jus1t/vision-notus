@@ -86,6 +86,15 @@ export default function PaymentPage() {
 
   // Add handlePaymentSubmission function after other functions
   const handlePaymentSubmission = async () => {
+    // Calculate net payment first
+    const netPayment = calculateNetPayment();
+    
+    // Check if net payment is less than or equal to 0
+    if (netPayment <= 0) {
+      alert("Cannot submit payment: The net payment amount must be greater than 0. Please check the advance payments and working days.");
+      return; // Exit the function early
+    }
+
     try {
       // Get current date and format it to YYYY-MM-DD
       const currentDate = new Date();
@@ -93,10 +102,17 @@ export default function PaymentPage() {
 
       const paymentData = {
         employeeObjectId: employeeId,
-        date: formattedDate,  // Using the formatted date
-        amountPaid: calculateNetPayment(),
+        date: formattedDate,
+        totalAdvanceCleared: calculateTotalAdvance(),
+        totalAmound: calculateTotalAmount(),
+        amountPaid: netPayment, // Use the already calculated net payment
         pendingAdvancesCleared: advancePayments.map(payment => payment._id),
-        paidBy: paidBy
+        paidBy: paidBy,
+        fullWorkingDays: workingDays?.totalWorkingDays || 0,
+        halfWorkingDays: workingDays?.halfWorkingDays || 0,
+        holidays: workingDays?.holidays || 0,
+        previousPaymentDate: lastPaymentDate,
+        wage: employeeDetails?.WagePerDay || 0
       };
 
       await api.post('/payment', paymentData);
@@ -106,6 +122,17 @@ export default function PaymentPage() {
       console.error('Error submitting payment:', error);
       alert('Failed to submit payment');
     }
+  };
+
+  // Add new function to calculate total amount before deductions
+  const calculateTotalAmount = () => {
+    if (!employeeDetails || !workingDays) return 0;
+
+    const wagePerDay = employeeDetails.WagePerDay || 0;
+    const fullDayAmount = workingDays.totalWorkingDays * wagePerDay;
+    const halfDayAmount = workingDays.halfWorkingDays * (wagePerDay / 2);
+    
+    return fullDayAmount + halfDayAmount;
   };
 
   if (loading) {
