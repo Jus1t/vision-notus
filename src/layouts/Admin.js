@@ -33,6 +33,11 @@ import CardWorkHistory from "components/Cards/CardWorkHistory";
 import AdvancePayment from "components/Cards/AdvancePayment";
 import PaymentPage from "components/Cards/PaymentPage";
 import CardViewPayments from "components/Cards/CardViewPayments";
+import AdvancePaymentHistory from "components/Cards/AdvancePaymentHistoy";
+import CardCreateSite from "components/Cards/CardCreateSite";
+import CardCreateSiteRequirement from "components/Cards/CardSiteRequirement";
+import CardViewSite from "components/Cards/CardViewSite";
+import CardViewSiteRequirement from "components/Cards/CardViewSiteRequirement";
 export default function Admin() {
   const showHeaderStats = false;
   return (
@@ -71,6 +76,11 @@ export default function Admin() {
             <ProtectedRoute path="/admin/advance-payment/:employeeId" exact component={AdvancePayment} />
             <ProtectedRoute path="/admin/payment-page/:employeeId" exact component={PaymentPage} />
             <ProtectedRoute path="/admin/view-payments/:employeeId" exact component={CardViewPayments} />
+            <ProtectedRoute path="/admin/advance-payment-history/:employeeId" exact component={AdvancePaymentHistory} />
+            <ProtectedRoute path="/admin/create-site/" exact component={CardCreateSite} />
+            <ProtectedRoute path="/admin/site-requirement/:siteId" exact component={CardCreateSiteRequirement} />
+            <ProtectedRoute path="/admin/view-site/:siteId" exact component={CardViewSite} />
+            <ProtectedRoute path="/admin/view-site-requirement/:siteId" exact component={CardViewSiteRequirement} />
             <Redirect from="*" to="/admin/dashboard" />
           </Switch>
         </div>

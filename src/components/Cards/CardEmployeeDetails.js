@@ -194,6 +194,13 @@ export default function CardEmployeeDetails() {
             handleInputChange={handleChange}
             isDate
           />
+          <InfoField
+            name="WagePerDay"
+            label="Wage Per Day"
+            value={formEmpDetails.WagePerDay}
+            isEditMode={isEditMode}
+            handleInputChange={handleChange}
+          />
         </div>
 
         <hr className="mt-6 border-b-1 border-blueGray-300" />

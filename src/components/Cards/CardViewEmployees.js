@@ -141,6 +141,7 @@ const CardViewEmployees = ({ color = "light" }) => {
                     <option value="payment-page">Payment</option>
                     <option value="advance-payment">Advance Payment</option>
                     <option value="view-payments">Payment History</option>
+                    <option value="advance-payment-history">Advance Payment History</option>
                   </select>
                 </td>
               </tr>
